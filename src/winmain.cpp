@@ -8,6 +8,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	const char myCustomClassName[] = "MY-CUSTOM-WINDOW-CLASS";
 	const char myCustomWindowName[] = "MY-CUSTOM-WINDOW-NAME";
 
+	unsigned int counter = 0;
+	MSG msg;
+	int ret;
+	bool isDone = false;
+
 	WNDCLASSEX myWindowClass;
 
 	myWindowClass.cbSize = sizeof(WNDCLASSEX);
@@ -43,7 +48,41 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		NULL);
 
 	if(hMyCustomWindow)
+	{
 		ShowWindow(hMyCustomWindow, nCmdShow);
+		UpdateWindow(hMyCustomWindow);
+	}
+
+	while(!isDone)
+	{
+		ret = PeekMessage(&msg, NULL, 0, 0, PM_REMOVE);
+		//ret = GetMessage(&msg, NULL, 0, 0);
+
+		std::cout << "> PeekMessage (" << counter << ") call..."
+			<< "\n   Ret: " << ret
+			<< "\n   Msg: " << msg.message
+			<< std::endl;
+
+		if(msg.message == WM_QUIT)
+		{
+			DestroyWindow(hMyCustomWindow);
+			UnregisterClass(myCustomClassName, hInstance);
+		}
+
+		if(ret)
+		{
+			std::cout << ">    tratamento de mensagens..." << std::endl;
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+		else
+		{
+			// loop principal
+			std::cout << ">    loop principal..." << std::endl;
+		}
+
+		counter++;
+	}
 
 	return 0;
 }
@@ -51,9 +90,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 LRESULT CALLBACK WindowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	std::cout << "> WindowProcedure call..."
-		<< "\nMSG: " << uMsg
-		<< "\nWPARAM: " << wParam
-		<< "\nLPARAM: " << lParam
+		<< "\n   MSG: " << uMsg
+		<< "\n   WPARAM: " << wParam
+		<< "\n   LPARAM: " << lParam
 		<< std::endl;
 
 	return DefWindowProc(hWnd,uMsg,wParam,lParam);
