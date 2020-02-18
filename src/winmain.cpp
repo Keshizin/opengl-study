@@ -63,14 +63,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			<< "\n   Msg: " << msg.message
 			<< std::endl;
 
-		if(msg.message == WM_QUIT)
-		{
-			DestroyWindow(hMyCustomWindow);
-			UnregisterClass(myCustomClassName, hInstance);
-		}
-
 		if(ret)
 		{
+			if(msg.message == WM_QUIT)
+			{
+				DestroyWindow(hMyCustomWindow);
+				UnregisterClass(myCustomClassName, hInstance);
+				return 0;
+			}
+
 			std::cout << ">    tratamento de mensagens..." << std::endl;
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
