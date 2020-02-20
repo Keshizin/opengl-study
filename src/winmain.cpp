@@ -77,7 +77,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	// WS_EX_TRANSPARENT
 	// WS_EX_WINDOWEDGE
 
-	DWORD dwStyle = 0;
+	DWORD dwStyle = WS_OVERLAPPEDWINDOW;
 
 	// WS_BORDER
 	// WS_CAPTION
@@ -112,10 +112,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		myCustomClassName,
 		myCustomWindowName,
 		dwStyle,
-		//CW_USEDEFAULT,
-		//CW_USEDEFAULT,
-		50,
-		50,
+		CW_USEDEFAULT,
+		CW_USEDEFAULT,
 		640,
 		480,
 		NULL,
@@ -126,21 +124,26 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	if(hMyCustomWindow)
 	{
 		ShowWindow(hMyCustomWindow, nCmdShow);
-		UpdateWindow(hMyCustomWindow);
+		//UpdateWindow(hMyCustomWindow);
 	}
 
 	while(!isDone)
 	{
 		ret = PeekMessage(&msg, NULL, 0, 0, PM_REMOVE);
-		//ret = GetMessage(&msg, NULL, 0, 0);
+		// ret = GetMessage(&msg, NULL, 0, 0); // Testar novamente quando o contador de FPS estiver pronto
 
-		std::cout << "> PeekMessage (" << counter << ") call..."
-			<< "\n   Ret: " << ret
-			<< "\n   Msg: " << msg.message
-			<< std::endl;
+		// std::cout << "> GetMessage (" << counter << ") call..."
+		// 	<< "\n   Ret: " << ret
+		// 	<< "\n   Msg: " << msg.message
+		// 	<< std::endl;
 
 		if(ret)
 		{
+			// std::cout << "> PeekMessage (" << counter << ") call..."
+			// 	<< "\n   Ret: " << ret
+			// 	<< "\n   Msg: " << msg.message
+			// 	<< std::endl;
+
 			if(msg.message == WM_QUIT)
 			{
 				DestroyWindow(hMyCustomWindow);
@@ -148,19 +151,20 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				return 0;
 			}
 
-			std::cout << ">    tratamento de mensagens..." << std::endl;
+			// std::cout << ">    tratamento de mensagens..." << std::endl;
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
 		else
 		{
 			// loop principal
-			std::cout << ">    loop principal..." << std::endl;
+			// std::cout << ">    loop principal..." << std::endl;
 		}
 
 		counter++;
 	}
 
+	std::cout << ">   END OF APPLICATION!" << std::endl;
 	return 0;
 }
 
@@ -172,5 +176,158 @@ LRESULT CALLBACK WindowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 		<< "\n   LPARAM: " << lParam
 		<< std::endl;
 
-	return DefWindowProc(hWnd,uMsg,wParam,lParam);
+	switch(uMsg)
+	{
+		// case WM_NULL: // no operation
+		// 	std::cout << ">   WM_NULL: " << uMsg << std::endl; 
+		// 	break;
+
+		// case WM_CREATE:
+		// 	std::cout << ">   WM_CREATE: " << uMsg << std::endl;
+		// 	break;
+
+		// case WM_DESTROY:
+		// 	std::cout << ">   WM_DESTROY: " << uMsg << std::endl;
+		// 	PostQuitMessage(0); // send a quit message
+		// 	break;
+
+		// case WM_MOVE:
+		// 	std::cout
+		// 		<< ">   WM_MOVE: " << uMsg
+		// 		<< "\n    X: " << LOWORD(lParam)
+		// 		<< "\n    Y: " << HIWORD(lParam)
+		// 		<< std::endl;
+
+		// 	break;
+
+		// case WM_SIZE:
+		// 	std::cout
+		// 		<< ">   WM_SIZE: " << uMsg
+		// 		<< "\n    TYPE: " << wParam
+		// 		<< "\n    WIDTH: " << LOWORD(lParam) // client area
+		// 		<< "\n    HEIGHT: " << HIWORD(lParam) // client area
+		// 		<< std::endl;
+
+		// 	break;
+
+		// case WM_ACTIVATE:
+		// 	std::cout
+		// 		<< ">   WM_ACTIVATE: " << uMsg
+		// 		<< "\n    STATE: " << LOWORD(wParam)
+		// 		<< "\n    IS MINIMIZED: " << HIWORD(wParam)
+		// 		<< std::endl;
+
+		// 	break;
+
+		// case WM_SETFOCUS: // keyboard focus
+		// 	std::cout << ">    WM_SETFOCUS: " << uMsg << std::endl;
+		// 	break;
+
+		// case WM_KILLFOCUS: // keyboard focus
+		// 	std::cout << ">    WM_KILLFOCUS: " << uMsg << std::endl;
+		// 	break;
+
+		// case WM_ENABLE: // (APP) relacionado ao teclado e mouse
+		// 	// BOOL EnableWindow(HWND hWnd, BOOL bEnable);
+		// 	std::cout
+		// 		<< ">   WM_ENABLE: " << uMsg
+		// 		<< "\n    STATE: " << wParam
+		// 		<< std::endl;
+
+		// 	break;
+
+		// case WM_SETREDRAW: // (APP)
+		// 	// SendMessage((HWND) hWnd, WM_SETREDRAW, (WPARAM) wParam, (LPARAM) lParam);
+		// 	std::cout
+		// 		<< ">   WM_SETREDRAW: " << uMsg
+		// 		<< "\n    STATE: " << wParam
+		// 		<< std::endl;
+
+		// 	break;
+
+		// case WM_SETTEXT:
+		// 	std::cout
+		// 		<< ">   WM_SETTEXT: " << uMsg
+		// 		// << "\n    TEXT: " << lParam
+		// 		<< std::endl;
+
+		// 	break;
+
+		// case WM_GETTEXT:
+		// 	std::cout
+		// 		<< ">   WM_GETTEXT: " << uMsg
+		// 		<< "\n    MAX: " << wParam
+		// 		// << "\n    TEXT: " << lParam
+		// 		<< std::endl;
+
+		// 	break;
+
+		// case WM_PAINT: // sys or another app request a paint
+		// 	// UpdateWindow, RedrawWindow, DispatchMessage
+		// 	std::cout << ">   WM_PAINT: " << uMsg << std::endl;
+		// 	break;
+
+		// case WM_SYSCOMMAND:
+		// 	std::cout
+		// 		<< ">   WM_SYSCOMMAND: " << uMsg
+		// 		<< "\n    TYPE: " << wParam
+		// 		// SC_CLOSE
+		// 		// SC_CONTEXTHELP
+		// 		// SC_DEFAULT
+		// 		// SC_HOTKEY
+		// 		// SC_HSCROLL
+		// 		// SCF_ISSECURE
+		// 		// SC_KEYMENU
+		// 		// SC_MAXIMIZE
+		// 		// SC_MINIMIZE
+		// 		// SC_MONITORPOWER
+		// 		// SC_MOUSEMENU
+		// 		// SC_MOVE
+		// 		// SC_NEXTWINDOW
+		// 		// SC_PREVWINDOW
+		// 		// SC_RESTORE
+		// 		// SC_SCREENSAVE
+		// 		// SC_SIZE
+		// 		// SC_TASKLIST
+		// 		// SC_VSCROLL
+		// 		<< "\n    (mouse) x: " << LOWORD(lParam)
+		// 		<< "\n    (mouse) y: " << HIWORD(lParam)
+		// 		<< std::endl;
+		// 	break;
+
+		// case WM_CLOSE:
+		// 	std::cout << ">   WM_CLOSE: " << uMsg << std::endl;
+		// 	break;
+
+		// case WM_KEYDOWN: // nonsystem key | A nonsystem key is a key that is pressed when the ALT key is not pressed.
+		// 	std::cout
+		// 		<< ">   WM_KEYDOWN: " << uMsg
+		// 		<< "\n    Virtual code: " << wParam
+		// 		<< "\n    Code bit set: " << lParam
+		// 		<< std::endl;
+		// 	break;
+
+		// case WM_KEYUP:
+		// 	std::cout
+		// 		<< ">   WM_KEYUP: " << uMsg
+		// 		<< "\n    Virtual code: " << wParam
+		// 		<< "\n    Code bit set: " << lParam
+		// 		<< std::endl;
+
+		// 	break;
+
+		// case WM_QUIT:
+		// 	// PostQuitMessage
+		// 	std::cout
+		// 		<< ">   WM_QUIT: " << uMsg
+		// 		<< "\n    Exit code: " << wParam
+		// 		<< std::endl;
+
+		// 	break;
+
+		default:
+			break;
+	}
+
+	return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
