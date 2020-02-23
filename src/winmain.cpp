@@ -8,7 +8,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	const char myCustomClassName[] = "MY-CUSTOM-WINDOW-CLASS";
 	const char myCustomWindowName[] = "MY-CUSTOM-WINDOW-NAME";
 
-	unsigned int counter = 0;
 	MSG msg;
 	int ret;
 	bool isDone = false;
@@ -16,28 +15,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	WNDCLASSEX myWindowClass;
 
 	myWindowClass.cbSize = sizeof(WNDCLASSEX);
-	// CS_BYTEALIGNCLIENT (?)
-	// CS_BYTEALIGNWINDOW (?)
-	// CS_CLASSDC
-	// CS_DBLCLKS
-	// CS_GLOBALCLASS
-	// CS_HREDRAW
-	// CS_NOCLOSE
-	// CS_OWNDC
-	// CS_PARENTDC
-	// CS_SAVEBITS
-	// CS_VREDRAW
-
-	myWindowClass.style =
-		CS_DBLCLKS |
-		CS_HREDRAW |
-		CS_OWNDC |
-		CS_VREDRAW;
-
+	myWindowClass.style = CS_DBLCLKS | CS_HREDRAW | CS_OWNDC | CS_VREDRAW;
 	myWindowClass.lpfnWndProc = WindowProcedure; // obrigatório
 	myWindowClass.cbClsExtra = 0;
 	myWindowClass.cbWndExtra = 0;
-	myWindowClass.hInstance = hInstance;// obrigatório
+	myWindowClass.hInstance = hInstance; // obrigatório
 	myWindowClass.hIcon = 0;
 	myWindowClass.hCursor = 0;
 	myWindowClass.hbrBackground = 0;
@@ -48,64 +30,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	RegisterClassEx(&myWindowClass);
 
 	DWORD dwExStyle = 0;
-
-	// WS_EX_ACCEPTFILES - The window accepts drag-drop files.
-	// WS_EX_APPWINDOW - Forces a top-level window onto the taskbar when the window is visible.
-	// WS_EX_CLIENTEDGE - The window has a border with a sunken edge.
-	// WS_EX_COMPOSITED
-	// WS_EX_CONTEXTHELP
-	// WS_EX_CONTROLPARENT
-	// WS_EX_DLGMODALFRAME
-	// WS_EX_LAYERED
-	// WS_EX_LAYOUTRTL
-	// WS_EX_LEFT
-	// WS_EX_LEFTSCROLLBAR
-	// WS_EX_LTRREADING
-	// WS_EX_MDICHILD
-	// WS_EX_NOACTIVATE
-	// WS_EX_NOINHERITLAYOUT
-	// WS_EX_NOPARENTNOTIFY
-	// WS_EX_NOREDIRECTIONBITMAP
-	// WS_EX_OVERLAPPEDWINDOW
-	// WS_EX_PALETTEWINDOW
-	// WS_EX_RIGHT
-	// WS_EX_RIGHTSCROLLBAR
-	// WS_EX_RTLREADING
-	// WS_EX_STATICEDGE
-	// WS_EX_TOOLWINDOW
-	// WS_EX_TOPMOST
-	// WS_EX_TRANSPARENT
-	// WS_EX_WINDOWEDGE
-
 	DWORD dwStyle = WS_OVERLAPPEDWINDOW;
-
-	// WS_BORDER
-	// WS_CAPTION
-	// WS_CHILD
-	// WS_CHILDWINDOW
-	// WS_CLIPCHILDREN
-	// WS_CLIPSIBLINGS
-	// WS_DISABLED
-	// WS_DLGFRAME
-	// WS_GROUP
-	// WS_HSCROLL
-	// WS_ICONIC
-	// WS_MAXIMIZE
-	// WS_MAXIMIZEBOX
-	// WS_MINIMIZE
-	// WS_MINIMIZEBOX
-	// WS_OVERLAPPED
-	// WS_OVERLAPPEDWINDOW
-	// WS_POPUP
-	// WS_POPUPWINDOW
-	// WS_SIZEBOX
-	// WS_SYSMENU
-	// WS_TABSTOP
-	// WS_THICKFRAME
-	// WS_TILED
-	// WS_TILEDWINDOW
-	// WS_VISIBLE
-	// WS_VSCROLL
 
 	HWND hMyCustomWindow = CreateWindowEx(
 		dwExStyle,
@@ -148,7 +73,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			{
 				DestroyWindow(hMyCustomWindow);
 				UnregisterClass(myCustomClassName, hInstance);
-				return 0;
+				isDone = true;
 			}
 
 			// std::cout << ">    tratamento de mensagens..." << std::endl;
@@ -160,9 +85,20 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			// loop principal
 			// std::cout << ">    loop principal..." << std::endl;
 		}
-
-		counter++;
 	}
+
+	// LOOP ALTERNATIVO
+	// while (running) {
+	//    MSG msg;
+	//    while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+	//       TranslateMessage(&msg);
+	//       DispatchMessage(&msg);
+	//    }
+	//    Update();
+	//    Draw();
+	//    SwapBuffers(m_opaqueWindowData->m_hdc);
+	//    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	// }
 
 	std::cout << ">   END OF APPLICATION!" << std::endl;
 	return 0;
@@ -181,6 +117,50 @@ LRESULT CALLBACK WindowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 		// case WM_NULL: // no operation
 		// 	std::cout << ">   WM_NULL: " << uMsg << std::endl; 
 		// 	break;
+
+		// ----------------------------------------------------------------------
+		//    TRATAMENTO DA JANELA WINDOW
+		// ----------------------------------------------------------------------
+		case WM_CREATE:
+			std::cout << ">   WM_CREATE: " << uMsg << std::endl;
+			break;
+
+		case WM_DESTROY:
+			std::cout << ">   WM_DESTROY: " << uMsg << std::endl;
+			PostQuitMessage(0); // send a quit message
+			break;
+
+		case WM_MOVE:
+			std::cout
+				<< ">   WM_MOVE: " << uMsg
+				<< "\n    X: " << LOWORD(lParam)
+				<< "\n    Y: " << HIWORD(lParam)
+				<< std::endl;
+
+			break;
+
+		case WM_SIZE:
+			std::cout
+				<< ">   WM_SIZE: " << uMsg
+				<< "\n    TYPE: " << wParam
+				<< "\n    WIDTH: " << LOWORD(lParam) // client area
+				<< "\n    HEIGHT: " << HIWORD(lParam) // client area
+				<< std::endl;
+
+			break;
+
+		case WM_CLOSE:
+			std::cout << ">   WM_CLOSE: " << uMsg << std::endl;
+			break;
+
+		case WM_QUIT:
+			// PostQuitMessage
+			std::cout
+			<< ">   WM_QUIT: " << uMsg
+			<< "\n    Exit code: " << wParam
+			<< std::endl;
+
+			break;
 
 		// ----------------------------------------------------------------------
 		//    TRATAMENTO DO MOUSE
@@ -552,33 +532,80 @@ LRESULT CALLBACK WindowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 			break;
 
-		// case WM_CREATE:
-		// 	std::cout << ">   WM_CREATE: " << uMsg << std::endl;
-		// 	break;
+		// ----------------------------------------------------------------------
+		//    TRATAMENTO DO TECLADO
+		// ----------------------------------------------------------------------
+		case WM_SYSKEYDOWN:
+			std::cout
+				<< ">   WM_SYSKEYDOWN: " << uMsg
+				<< "\n    key code: " << wParam
+				<< "\n    binary: " << lParam
+				<< std::endl;
 
-		// case WM_DESTROY:
-		// 	std::cout << ">   WM_DESTROY: " << uMsg << std::endl;
-		// 	PostQuitMessage(0); // send a quit message
-		// 	break;
+			break;
 
-		// case WM_MOVE:
-		// 	std::cout
-		// 		<< ">   WM_MOVE: " << uMsg
-		// 		<< "\n    X: " << LOWORD(lParam)
-		// 		<< "\n    Y: " << HIWORD(lParam)
-		// 		<< std::endl;
+		case WM_KEYDOWN:
+			std::cout
+				<< ">   WM_KEYDOWN: " << uMsg
+				<< "\n    key code: " << wParam
+				<< "\n    binary: " << lParam
+				<< std::endl;
 
-		// 	break;
+			break;
 
-		// case WM_SIZE:
-		// 	std::cout
-		// 		<< ">   WM_SIZE: " << uMsg
-		// 		<< "\n    TYPE: " << wParam
-		// 		<< "\n    WIDTH: " << LOWORD(lParam) // client area
-		// 		<< "\n    HEIGHT: " << HIWORD(lParam) // client area
-		// 		<< std::endl;
+		case WM_SYSKEYUP:
+			std::cout
+				<< ">   WM_SYSKEYUP: " << uMsg
+				<< "\n    key code: " << wParam
+				<< "\n    binary: " << lParam
+				<< std::endl;
 
-		// 	break;
+			break;
+
+		case WM_KEYUP:
+			std::cout
+				<< ">   WM_KEYUP: " << uMsg
+				<< "\n    key code: " << wParam
+				<< "\n    binary: " << lParam
+				<< std::endl;
+
+			break;
+
+		case WM_CHAR:
+			std::cout
+				<< ">   WM_CHAR: " << uMsg
+				<< "\n    key code: " << wParam
+				<< "\n    binary: " << lParam
+				<< std::endl;
+
+			break;
+
+		case WM_SYSCHAR:
+			std::cout
+				<< ">   WM_SYSCHAR: " << uMsg
+				<< "\n    key code: " << wParam
+				<< "\n    binary: " << lParam
+				<< std::endl;
+
+			break;
+
+		case WM_DEADCHAR:
+			std::cout
+				<< ">   WM_DEADCHAR: " << uMsg
+				<< "\n    key code: " << wParam
+				<< "\n    binary: " << lParam
+				<< std::endl;
+
+			break;
+
+		case WM_IME_CHAR:
+			std::cout
+				<< ">   WM_IME_CHAR: " << uMsg
+				<< "\n    key code: " << wParam
+				<< "\n    binary: " << lParam
+				<< std::endl;
+
+			break;
 
 		// case WM_ACTIVATE:
 		// 	std::cout
@@ -665,36 +692,6 @@ LRESULT CALLBACK WindowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 		// 		<< std::endl;
 		// 	break;
 
-		// case WM_CLOSE:
-		// 	std::cout << ">   WM_CLOSE: " << uMsg << std::endl;
-		// 	break;
-
-		// case WM_KEYDOWN: // nonsystem key | A nonsystem key is a key that is pressed when the ALT key is not pressed.
-		// 	std::cout
-		// 		<< ">   WM_KEYDOWN: " << uMsg
-		// 		<< "\n    Virtual code: " << wParam
-		// 		<< "\n    Code bit set: " << lParam
-		// 		<< std::endl;
-		// 	break;
-
-		// case WM_KEYUP:
-		// 	std::cout
-		// 		<< ">   WM_KEYUP: " << uMsg
-		// 		<< "\n    Virtual code: " << wParam
-		// 		<< "\n    Code bit set: " << lParam
-		// 		<< std::endl;
-
-		// 	break;
-
-		// case WM_QUIT:
-		// 	// PostQuitMessage
-		// 	std::cout
-		// 		<< ">   WM_QUIT: " << uMsg
-		// 		<< "\n    Exit code: " << wParam
-		// 		<< std::endl;
-
-		// 	break;
-
 		default:
 			break;
 	}
@@ -703,10 +700,6 @@ LRESULT CALLBACK WindowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 }
 
 // Complete list of messages
-// WM_CREATE
-// WM_DESTROY
-// WM_MOVE
-// WM_SIZE
 // WM_ACTIVATE
 // WM_SETFOCUS
 // WM_KILLFOCUS
@@ -716,9 +709,7 @@ LRESULT CALLBACK WindowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 // WM_GETTEXT
 // WM_GETTEXTLENGTH
 // WM_PAINT
-// WM_CLOSE
 // WM_QUERYENDSESSION
-// WM_QUIT
 // WM_QUERYOPEN
 // WM_ERASEBKGND
 // WM_SYSCOLORCHANGE
@@ -842,14 +833,7 @@ LRESULT CALLBACK WindowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 // BM_SETIMAGE
 // BM_SETDONTCLICK
 // WM_INPUT
-// WM_KEYDOWN
 // WM_KEYFIRST
-// WM_KEYUP
-// WM_CHAR
-// WM_DEADCHAR
-// WM_SYSKEYDOWN
-// WM_SYSKEYUP
-// WM_SYSCHAR
 // WM_SYSDEADCHAR
 // WM_UNICHAR / WM_KEYLAST
 // WM_WNT_CONVERTREQUESTEX
@@ -917,7 +901,6 @@ LRESULT CALLBACK WindowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 // WM_IME_CONTROL
 // WM_IME_COMPOSITIONFULL
 // WM_IME_SELECT
-// WM_IME_CHAR
 // WM_IME_REQUEST
 // WM_IMEKEYDOWN
 // WM_IME_KEYDOWN
