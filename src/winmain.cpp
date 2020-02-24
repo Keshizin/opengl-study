@@ -1,5 +1,6 @@
 #include <windows.h>
 #include <iostream>
+#include <GL/gl.h>
 
 LRESULT CALLBACK WindowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
@@ -46,6 +47,45 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		hInstance,
 		NULL);
 
+	// CreateGLWindow("NeHe's OpenGL Framework",640,480,16,fullscreen)
+	// BOOL CreateGLWindow(char* title, int width, int height, int bits, bool fullscreenflag)
+
+	static PIXELFORMATDESCRIPTOR pfd =
+	{
+		sizeof(PIXELFORMATDESCRIPTOR), // nSize
+		1, // nVersion
+		PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER, // dwFlags
+		PFD_TYPE_RGBA, // iPixelType
+		24, // cColorBits
+		0, // cRedBits
+		0, // cRedShift
+		0, // cGreenBits
+		0, // cGreenShift
+		0, // cBlueBits
+		0, // cBlueShift
+		0, // cAlphaBits
+		0, // cAlphaShift
+		0, // cAccumBits
+		0, // cAccumRedBits
+		0, // cAccumGreenBits
+		0, // cAccumBlueBits
+		0, // cAccumAlphaBits
+		24, // cDepthBits
+		0, // cStencilBits
+		0, // cAuxBuffers
+		PFD_MAIN_PLANE, // iLayerType
+		0, // bReserved
+		0, // dwLayerMask
+		0, // dwVisibleMask
+		0 // dwDamageMask
+	};
+
+	HDC hDC = GetDC(hMyCustomWindow);
+	GLuint PixelFormat = ChoosePixelFormat(hDC, &pfd);
+	SetPixelFormat(hDC, PixelFormat, &pfd);
+	HGLRC hRC = wglCreateContext(hDC);
+	wglMakeCurrent(hDC, hRC);
+
 	if(hMyCustomWindow)
 	{
 		ShowWindow(hMyCustomWindow, nCmdShow);
@@ -71,6 +111,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 			if(msg.message == WM_QUIT)
 			{
+				wglMakeCurrent(NULL, NULL);
+				wglDeleteContext(hRC);
+				ReleaseDC(hMyCustomWindow, hDC);
 				DestroyWindow(hMyCustomWindow);
 				UnregisterClass(myCustomClassName, hInstance);
 				isDone = true;

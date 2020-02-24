@@ -13,13 +13,14 @@ DFILES=$(patsubst $(SRC_DIR)/%.cpp,$(TMP_DIR)/%.d,$(CPPSOURCES))
 
 #INC_FLAGS=-I$(INC_DIR)
 INC_FLAGS=
+LIB_FLAGS=-lgdi32 -lopengl32
 
 all: $(BIN_DIR)/$(OUTPUT_NAME)
 
 # Linkedição (.exe)
 $(BIN_DIR)/$(OUTPUT_NAME): $(OBJFILES)
 	@echo . Gerando executavel final: $@
-	@g++ $^ -o $@ -Wall
+	@g++ $^ -o $@ $(LIB_FLAGS) -Wall
 
 # Compilação (.o)
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
