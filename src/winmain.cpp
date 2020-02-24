@@ -22,7 +22,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	myWindowClass.cbWndExtra = 0;
 	myWindowClass.hInstance = hInstance; // obrigatório
 	myWindowClass.hIcon = 0;
-	myWindowClass.hCursor = 0;
+	myWindowClass.hCursor = LoadCursor(NULL, IDC_ARROW);
 	myWindowClass.hbrBackground = 0;
 	myWindowClass.lpszMenuName = 0;
 	myWindowClass.lpszClassName = myCustomClassName; // obrigatório
@@ -47,16 +47,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		hInstance,
 		NULL);
 
-	// CreateGLWindow("NeHe's OpenGL Framework",640,480,16,fullscreen)
-	// BOOL CreateGLWindow(char* title, int width, int height, int bits, bool fullscreenflag)
-
 	static PIXELFORMATDESCRIPTOR pfd =
 	{
 		sizeof(PIXELFORMATDESCRIPTOR), // nSize
 		1, // nVersion
 		PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER, // dwFlags
 		PFD_TYPE_RGBA, // iPixelType
-		24, // cColorBits
+		32, // cColorBits
 		0, // cRedBits
 		0, // cRedShift
 		0, // cGreenBits
@@ -70,7 +67,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		0, // cAccumGreenBits
 		0, // cAccumBlueBits
 		0, // cAccumAlphaBits
-		24, // cDepthBits
+		32, // cDepthBits
 		0, // cStencilBits
 		0, // cAuxBuffers
 		PFD_MAIN_PLANE, // iLayerType
@@ -89,8 +86,16 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	if(hMyCustomWindow)
 	{
 		ShowWindow(hMyCustomWindow, nCmdShow);
-		//UpdateWindow(hMyCustomWindow);
+		UpdateWindow(hMyCustomWindow);
 	}
+
+	// Inicialização OpenGL
+	glViewport(0, 0, 640, 480);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	glClearColor(0.133f, 0.161f, 0.173f, 1.0f);
 
 	while(!isDone)
 	{
@@ -119,14 +124,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				isDone = true;
 			}
 
-			// std::cout << ">    tratamento de mensagens..." << std::endl;
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
 		else
 		{
-			// loop principal
-			// std::cout << ">    loop principal..." << std::endl;
+			// LOOP PRINCIPAL
+			// Comandos OPENGL
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			SwapBuffers(hDC);
 		}
 	}
 
