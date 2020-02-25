@@ -4,6 +4,10 @@
 
 LRESULT CALLBACK WindowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
+void resizeGLWindow(int width, int height);
+void initGL();
+void drawGLWindow();
+
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
 	const char myCustomClassName[] = "MY-CUSTOM-WINDOW-CLASS";
@@ -89,13 +93,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		UpdateWindow(hMyCustomWindow);
 	}
 
-	// Inicialização OpenGL
-	glViewport(0, 0, 640, 480);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	glClearColor(0.133f, 0.161f, 0.173f, 1.0f);
+	initGL();
 
 	while(!isDone)
 	{
@@ -130,9 +128,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		else
 		{
 			// LOOP PRINCIPAL
-			// Comandos OPENGL
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			SwapBuffers(hDC);
+			drawGLWindow();
 		}
 	}
 
@@ -713,6 +709,14 @@ LRESULT CALLBACK WindowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 		// 	std::cout << ">   WM_PAINT: " << uMsg << std::endl;
 		// 	break;
 
+		// case WM_PAINT:
+		// {
+		// PAINTSTRUCT ps;
+		// HDC hdc = BeginPaint(hwnd, &ps);
+		// FillRect(hdc, &ps.rcPaint, (HBRUSH) (COLOR_WINDOW+1));
+		// EndPaint(hwnd, &ps);
+		// }
+
 		// case WM_SYSCOMMAND:
 		// 	std::cout
 		// 		<< ">   WM_SYSCOMMAND: " << uMsg
@@ -746,6 +750,27 @@ LRESULT CALLBACK WindowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 	}
 
 	return DefWindowProc(hWnd, uMsg, wParam, lParam);
+}
+
+void resizeGLWindow(int width, int height)
+{
+	glViewport(0, 0, width, height);
+}
+
+void initGL()
+{
+	glViewport(0, 0, 640, 480);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	glClearColor(0.133f, 0.161f, 0.173f, 1.0f);
+}
+
+void drawGLWindow()
+{
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	SwapBuffers(hDC);
 }
 
 // Complete list of messages
