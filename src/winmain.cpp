@@ -6,7 +6,7 @@ LRESULT CALLBACK WindowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 void resizeGLWindow(int width, int height);
 void initGL();
-void drawGLWindow();
+void drawGLWindow(HDC hDC);
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
@@ -128,7 +128,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		else
 		{
 			// LOOP PRINCIPAL
-			drawGLWindow();
+			drawGLWindow(hDC);
 		}
 	}
 
@@ -192,6 +192,7 @@ LRESULT CALLBACK WindowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 				<< "\n    HEIGHT: " << HIWORD(lParam) // client area
 				<< std::endl;
 
+			resizeGLWindow(LOWORD(lParam), HIWORD(lParam));
 			break;
 
 		case WM_CLOSE:
@@ -767,7 +768,7 @@ void initGL()
 	glClearColor(0.133f, 0.161f, 0.173f, 1.0f);
 }
 
-void drawGLWindow()
+void drawGLWindow(HDC hDC)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	SwapBuffers(hDC);
