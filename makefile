@@ -4,6 +4,8 @@ OBJ_DIR=obj
 SRC_DIR=src
 BIN_DIR=bin
 TMP_DIR=tmp
+LIB_DIR=lib
+INC_DIR=include
 
 # Flags que devem ser passados para o compilador
 OUTPUT_NAME=myopengl.exe
@@ -11,16 +13,16 @@ CPPSOURCES=$(wildcard $(SRC_DIR)/*.cpp)
 OBJFILES=$(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(CPPSOURCES))
 DFILES=$(patsubst $(SRC_DIR)/%.cpp,$(TMP_DIR)/%.d,$(CPPSOURCES))
 
-#INC_FLAGS=-I$(INC_DIR)
-INC_FLAGS=
-LIB_FLAGS=-lgdi32 -lopengl32
+INC_FLAGS=-I$(INC_DIR)
+LIB_FLAGS=-lgdi32 -lopengl32 -lglu32 -ljpeg
+DIRLIB_FLAG=-L$(LIB_DIR)/jpeg
 
 all: $(BIN_DIR)/$(OUTPUT_NAME)
 
 # Linkedição (.exe)
 $(BIN_DIR)/$(OUTPUT_NAME): $(OBJFILES)
 	@echo . Gerando executavel final: $@
-	@g++ $^ -o $@ $(LIB_FLAGS) -Wall
+	@g++ $^ -o $@ $(DIRLIB_FLAG) $(LIB_FLAGS) -Wall
 
 # Compilação (.o)
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp

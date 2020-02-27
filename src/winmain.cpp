@@ -1,12 +1,39 @@
 #include <windows.h>
 #include <iostream>
 #include <GL/gl.h>
+#include <GL/glu.h>
+
+#define XMD_H	
+#define HAVE_BOOLEAN
+
+#define WINDOW_WIDTH  600
+#define WINDOW_HEIGHT 600
+
+extern "C" {
+	#include <jpeg/jpeglib.h>
+}
+
+// Define a estrutura de uma imagem
+typedef struct
+{
+	char nome[50];			// nome do arquivo carregado
+	int ncomp;				// número de componentes na textura (1-intensidade, 3-RGB)
+	GLint dimx;				// largura 
+	GLint dimy;				// altura
+	GLuint texid;			// identifição da textura em OpenGL
+	unsigned char *data;	// apontador para a imagem em si
+} TEX;
+
+TEX *globalImg;
 
 LRESULT CALLBACK WindowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 void resizeGLWindow(int width, int height);
 void initGL();
 void drawGLWindow(HDC hDC);
+
+TEX *LoadJPG(const char *filename, bool inverte = true);
+void DecodeJPG(jpeg_decompress_struct* cinfo, TEX *pImageData, bool inverte);
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
@@ -18,6 +45,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	bool isDone = false;
 
 	WNDCLASSEX myWindowClass;
+
+	RECT windowSize;
+	windowSize.left = (long)0;
+	windowSize.right = (long)600;
+	windowSize.top = (long)0;
+	windowSize.bottom = (long)600;
 
 	myWindowClass.cbSize = sizeof(WNDCLASSEX);
 	myWindowClass.style = CS_DBLCLKS | CS_HREDRAW | CS_OWNDC | CS_VREDRAW;
@@ -37,6 +70,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	DWORD dwExStyle = 0;
 	DWORD dwStyle = WS_OVERLAPPEDWINDOW;
 
+	AdjustWindowRectEx(&windowSize, dwStyle, FALSE, dwExStyle);
+
 	HWND hMyCustomWindow = CreateWindowEx(
 		dwExStyle,
 		myCustomClassName,
@@ -44,8 +79,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		dwStyle,
 		CW_USEDEFAULT,
 		CW_USEDEFAULT,
-		640,
-		480,
+		windowSize.right - windowSize.left,
+		windowSize.bottom - windowSize.top,
 		NULL,
 		NULL,
 		hInstance,
@@ -176,11 +211,11 @@ LRESULT CALLBACK WindowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 			break;
 
 		case WM_MOVE:
-			std::cout
-				<< ">   WM_MOVE: " << uMsg
-				<< "\n    X: " << LOWORD(lParam)
-				<< "\n    Y: " << HIWORD(lParam)
-				<< std::endl;
+			// std::cout
+			// 	<< ">   WM_MOVE: " << uMsg
+			// 	<< "\n    X: " << LOWORD(lParam)
+			// 	<< "\n    Y: " << HIWORD(lParam)
+			// 	<< std::endl;
 
 			break;
 
@@ -488,22 +523,22 @@ LRESULT CALLBACK WindowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 			// The ClientToScreen function converts the client-area coordinates of
 			// a specified point to screen coordinates.
 
-			std::cout
-				<< ">   WM_MOUSEMOVE: " << uMsg
-				<< "\n    Virtual Key: " << wParam
-				<< "\n    (mouse) x: " << LOWORD(lParam)
-				<< "\n    (mouse) y: " << HIWORD(lParam)
-				<< std::endl;
+			// std::cout
+			// 	<< ">   WM_MOUSEMOVE: " << uMsg
+			// 	<< "\n    Virtual Key: " << wParam
+			// 	<< "\n    (mouse) x: " << LOWORD(lParam)
+			// 	<< "\n    (mouse) y: " << HIWORD(lParam)
+			// 	<< std::endl;
 
 			break;
 
 		case WM_NCMOUSEMOVE:
-			std::cout
-				<< ">   WM_NCMOUSEMOVE: " << uMsg
-				<< "\n    Virtual Key: " << wParam
-				<< "\n    (mouse) x: " << LOWORD(lParam)
-				<< "\n    (mouse) y: " << HIWORD(lParam)
-				<< std::endl;
+			// std::cout
+			// 	<< ">   WM_NCMOUSEMOVE: " << uMsg
+			// 	<< "\n    Virtual Key: " << wParam
+			// 	<< "\n    (mouse) x: " << LOWORD(lParam)
+			// 	<< "\n    (mouse) y: " << HIWORD(lParam)
+			// 	<< std::endl;
 
 			break;
 
@@ -518,63 +553,63 @@ LRESULT CALLBACK WindowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 			//		tme.dwHoverTime = HOVER_DEFAULT;
 			//		TrackMouseEvent(&tme);
 
-			std::cout
-				<< ">   WM_MOUSEHOVER: " << uMsg
-				<< "\n    Virtual Key: " << wParam
-				<< "\n    (mouse) x: " << LOWORD(lParam)
-				<< "\n    (mouse) y: " << HIWORD(lParam)
-				<< std::endl;
+			// std::cout
+			// 	<< ">   WM_MOUSEHOVER: " << uMsg
+			// 	<< "\n    Virtual Key: " << wParam
+			// 	<< "\n    (mouse) x: " << LOWORD(lParam)
+			// 	<< "\n    (mouse) y: " << HIWORD(lParam)
+			// 	<< std::endl;
 
 			break;
 
 		case WM_NCMOUSEHOVER:
-			std::cout
-				<< ">   WM_NCMOUSEHOVER: " << uMsg
-				<< "\n    Virtual Key: " << wParam
-				<< "\n    (mouse) x: " << LOWORD(lParam)
-				<< "\n    (mouse) y: " << HIWORD(lParam)
-				<< std::endl;
+			// std::cout
+			// 	<< ">   WM_NCMOUSEHOVER: " << uMsg
+			// 	<< "\n    Virtual Key: " << wParam
+			// 	<< "\n    (mouse) x: " << LOWORD(lParam)
+			// 	<< "\n    (mouse) y: " << HIWORD(lParam)
+			// 	<< std::endl;
 
 			break;
 
 		case WM_MOUSELEAVE:
-			std::cout
-				<< ">   WM_MOUSELEAVE: " << uMsg
-				<< "\n    Virtual Key: " << wParam
-				<< "\n    (mouse) x: " << LOWORD(lParam)
-				<< "\n    (mouse) y: " << HIWORD(lParam)
-				<< std::endl;
+			// std::cout
+			// 	<< ">   WM_MOUSELEAVE: " << uMsg
+			// 	<< "\n    Virtual Key: " << wParam
+			// 	<< "\n    (mouse) x: " << LOWORD(lParam)
+			// 	<< "\n    (mouse) y: " << HIWORD(lParam)
+			// 	<< std::endl;
 
 			break;
 
 		case WM_NCMOUSELEAVE:
-			std::cout
-				<< ">   WM_NCMOUSELEAVE: " << uMsg
-				<< "\n    Virtual Key: " << wParam
-				<< "\n    (mouse) x: " << LOWORD(lParam)
-				<< "\n    (mouse) y: " << HIWORD(lParam)
-				<< std::endl;
+			// std::cout
+			// 	<< ">   WM_NCMOUSELEAVE: " << uMsg
+			// 	<< "\n    Virtual Key: " << wParam
+			// 	<< "\n    (mouse) x: " << LOWORD(lParam)
+			// 	<< "\n    (mouse) y: " << HIWORD(lParam)
+			// 	<< std::endl;
 
 			break;
 
 		case WM_MOUSEWHEEL:
-			std::cout
-				<< ">   WM_MOUSEWHEEL: " << uMsg
-				<< "\n    Virtual Key: " << wParam
-				<< "\n    (mouse) x: " << LOWORD(lParam)
-				<< "\n    (mouse) y: " << HIWORD(lParam)
-				<< std::endl;
+			// std::cout
+			// 	<< ">   WM_MOUSEWHEEL: " << uMsg
+			// 	<< "\n    Virtual Key: " << wParam
+			// 	<< "\n    (mouse) x: " << LOWORD(lParam)
+			// 	<< "\n    (mouse) y: " << HIWORD(lParam)
+			// 	<< std::endl;
 
 			break;
 
 		// ----------------------------------------------------------------------
 
 		case WM_MOUSEACTIVATE:
-			std::cout
-				<< ">   WM_MOUSEACTIVATE: " << uMsg
-				<< "\n    hit test: " << LOWORD(lParam)
-				<< "\n    id: " << HIWORD(lParam)
-				<< std::endl;
+			// std::cout
+			// 	<< ">   WM_MOUSEACTIVATE: " << uMsg
+			// 	<< "\n    hit test: " << LOWORD(lParam)
+			// 	<< "\n    id: " << HIWORD(lParam)
+			// 	<< std::endl;
 
 			break;
 
@@ -755,22 +790,41 @@ LRESULT CALLBACK WindowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 void resizeGLWindow(int width, int height)
 {
+	std::cout
+		<< "CALLBACK - resizeGLWindow"
+		<< "\n   -> width: " << width
+		<< "\n   -> height: " << height
+		<< std::endl;
+
 	glViewport(0, 0, width, height);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	//gluOrtho2D(0, width, 0, height);
+	gluOrtho2D(0, width, 0, height);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
 }
 
 void initGL()
 {
-	glViewport(0, 0, 640, 480);
+	globalImg = LoadJPG("assets/logo.jpg");
+
+	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	glClearColor(0.133f, 0.161f, 0.173f, 1.0f);
+	//glClearColor(0.133f, 0.161f, 0.173f, 1.0f);
+	glClearColor(0.09f, 0.4f, 0.018f, 1.0f); // logo
+	glPixelStorei (GL_UNPACK_ALIGNMENT, 1);
 }
 
 void drawGLWindow(HDC hDC)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glColor3f(0.09f, 0.4f, 0.018f);
+	//glRasterPos2i(0, 0);
+	glDrawPixels(globalImg->dimx, globalImg->dimy, GL_RGB, GL_UNSIGNED_BYTE, globalImg->data);
 	SwapBuffers(hDC);
 }
 
@@ -1772,3 +1826,93 @@ void drawGLWindow(HDC hDC)
 // WM_NCUAHDRAWFRAME
 // WM_OTHERWINDOWCREATED
 // WM_OTHERWINDOWDESTROYED
+
+TEX *LoadJPG(const char *filename, bool inverte)
+{
+	struct jpeg_decompress_struct cinfo;
+	TEX *pImageData = NULL;
+	FILE *pFile;
+
+	if((pFile = fopen(filename, "rb")) == NULL) 
+	{
+		// Exibe uma mensagem de erro avisando que o arquivo não foi encontrado
+		// e retorna NULL
+		printf("Impossível carregar arquivo JPG: %s\n",filename);
+		return NULL;
+	}
+
+	// Cria um gerenciado de erro
+	jpeg_error_mgr jerr;
+
+	// Objeto com informações de compactação para o endereço do gerenciador de erro
+	cinfo.err = jpeg_std_error(&jerr);
+
+	// Inicializa o objeto de decompactação
+	jpeg_create_decompress(&cinfo);
+
+	
+	// Especifica a origem dos dados (apontador para o arquivo)	
+	jpeg_stdio_src(&cinfo, pFile);
+	
+	// Aloca a estrutura que conterá os dados jpeg
+	pImageData = (TEX*)malloc(sizeof(TEX));
+
+	// Decodifica o arquivo JPG e preenche a estrutura de dados da imagem
+	DecodeJPG(&cinfo, pImageData, inverte);
+	
+	// Libera a memória alocada para leitura e decodificação do arquivo JPG
+	jpeg_destroy_decompress(&cinfo);
+	
+	// Fecha o arquivo 
+	fclose(pFile);
+
+	// Retorna os dados JPG (esta memória deve ser liberada depois de usada)
+	
+	return pImageData;
+}
+
+void DecodeJPG(jpeg_decompress_struct* cinfo, TEX *pImageData, bool inverte)
+{
+	// Lê o cabeçalho de um arquivo jpeg
+	jpeg_read_header(cinfo, TRUE);
+	
+	// Começa a descompactar um arquivo jpeg com a informação 
+	// obtida do cabeçalho
+	jpeg_start_decompress(cinfo);
+
+	// Pega as dimensões da imagem e varre as linhas para ler os dados do pixel
+	pImageData->ncomp = cinfo->num_components;
+	pImageData->dimx  = cinfo->image_width;
+	pImageData->dimy  = cinfo->image_height;
+
+	int rowSpan = pImageData->ncomp * pImageData->dimx;
+	// Aloca memória para o buffer do pixel
+	pImageData->data = new unsigned char[rowSpan * pImageData->dimy];
+		
+	// Aqui se usa a variável de estado da biblioteca cinfo.output_scanline 
+	// como o contador de loop
+	
+	// Cria um array de apontadores para linhas
+	int height = pImageData->dimy - 1;
+	unsigned char** rowPtr = new unsigned char*[pImageData->dimy];
+	if(inverte)
+		for (int i = 0; i <= height; i++)
+			rowPtr[height - i] = &(pImageData->data[i*rowSpan]);
+	else
+		for (int i = 0; i <= height; i++)
+			rowPtr[i] = &(pImageData->data[i*rowSpan]);
+
+	// Aqui se extrai todos os dados de todos os pixels
+	int rowsRead = 0;
+	while (cinfo->output_scanline < cinfo->output_height) 
+	{
+		// Lê a linha corrente de pixels e incrementa o contador de linhas lidas
+		rowsRead += jpeg_read_scanlines(cinfo, &rowPtr[rowsRead], cinfo->output_height - rowsRead);
+	}
+	
+	// Libera a memória
+	delete [] rowPtr;
+
+	// Termina a decompactação dos dados 
+	jpeg_finish_decompress(cinfo);
+}
