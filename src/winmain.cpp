@@ -67,8 +67,36 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	RegisterClassEx(&myWindowClass);
 
-	DWORD dwExStyle = 0;
-	DWORD dwStyle = WS_OVERLAPPEDWINDOW;
+	// Janela default (janela com barra de título)
+	// DWORD dwExStyle = 0;
+	// DWORD dwStyle = 0;
+
+	// Janela sem bordas (sem barra de títulos)
+	// DWORD dwExStyle = WS_EX_APPWINDOW;
+	// DWORD dwStyle = WS_POPUP;
+
+	// Janela sem bordas (somente com a barra de títulos)
+	// DWORD dwExStyle = WS_EX_APPWINDOW;
+	// DWORD dwStyle = WS_POPUP | WS_CAPTION;
+
+	// Janela com várias opções do sistema
+	// DWORD dwExStyle = WS_EX_APPWINDOW;
+	// DWORD dwStyle = WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SYSMENU;
+	// DWORD dwStyle = WS_MINIMIZEBOX | WS_SYSMENU;
+	// DWORD dwStyle = WS_SYSMENU;
+
+	// Janela redimensionável (somente com a barra de títulos)
+	// DWORD dwExStyle = WS_EX_APPWINDOW;
+	// DWORD dwStyle = WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME;
+
+	// Janela não redimensionável (somente com a barra de títulos)
+	DWORD dwExStyle = WS_EX_APPWINDOW;
+	DWORD dwStyle = WS_POPUP | WS_CAPTION | WS_SYSMENU;
+
+	// Janela com todas as opções
+	// DWORD dwExStyle = WS_EX_APPWINDOW;
+	// DWORD dwStyle = WS_OVERLAPPEDWINDOW;
+
 
 	AdjustWindowRectEx(&windowSize, dwStyle, FALSE, dwExStyle);
 
@@ -77,8 +105,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		myCustomClassName,
 		myCustomWindowName,
 		dwStyle,
-		CW_USEDEFAULT,
-		CW_USEDEFAULT,
+		//CW_USEDEFAULT,
+		//CW_USEDEFAULT,
+		100,
+		100,
 		windowSize.right - windowSize.left,
 		windowSize.bottom - windowSize.top,
 		NULL,
@@ -814,8 +844,8 @@ void initGL()
 	glLoadIdentity();
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	//glClearColor(0.133f, 0.161f, 0.173f, 1.0f);
-	glClearColor(0.09f, 0.4f, 0.018f, 1.0f); // logo
+	glClearColor(0.133f, 0.161f, 0.173f, 1.0f);
+	//glClearColor(0.09f, 0.4f, 0.018f, 1.0f); // logo
 	glPixelStorei (GL_UNPACK_ALIGNMENT, 1);
 }
 
