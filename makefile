@@ -6,12 +6,15 @@ BIN_DIR=bin
 TMP_DIR=tmp
 LIB_DIR=lib
 INC_DIR=include
+RES_DIR=winres
 
 # Flags que devem ser passados para o compilador
 OUTPUT_NAME=myopengl.exe
 CPPSOURCES=$(wildcard $(SRC_DIR)/*.cpp)
-OBJFILES=$(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(CPPSOURCES))
+OBJFILES=$(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(CPPSOURCES))	
 DFILES=$(patsubst $(SRC_DIR)/%.cpp,$(TMP_DIR)/%.d,$(CPPSOURCES))
+RESSRCFILES= $(wildcard $(RES_DIR)/*.rc)
+OBJRESFILES=$(patsubst $(RES_DIR)/%.rc,$(OBJ_DIR)/%.o,$(RESSRCFILES))
 
 INC_FLAGS=-I$(INC_DIR)
 LIB_FLAGS=-lgdi32 -lopengl32 -lglu32 -ljpeg
@@ -22,7 +25,7 @@ all: $(BIN_DIR)/$(OUTPUT_NAME)
 # Linkedição (.exe)
 $(BIN_DIR)/$(OUTPUT_NAME): $(OBJFILES)
 	@echo . Gerando executavel final: $@
-	@g++ $^ -o $@ $(DIRLIB_FLAG) $(LIB_FLAGS) -Wall
+	@g++ $^ -o $@ $(OBJRESFILES) $(DIRLIB_FLAG) $(LIB_FLAGS) -Wall
 
 # Compilação (.o)
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
@@ -72,7 +75,18 @@ var-teste:
 	@echo $(SRC_DIR)
 	@echo $(BIN_DIR)
 	@echo $(TMP_DIR)
+	@echo $(LIB_DIR)
+	@echo $(INC_DIR)
+	@echo $(RES_DIR)
 	@echo $(OUTPUT_NAME)
 	@echo $(CPPSOURCES)
 	@echo $(OBJFILES)
 	@echo $(DFILES)
+	@echo $(RESSRCFILES)
+	@echo $(OBJRESFILES)
+
+# Compilação de recursos do Windows
+windows-res: $(OBJRESFILES)
+
+$(OBJ_DIR)/%.o: $(RES_DIR)/%.rc
+	windres $^ $(INC_FLAGS) -o $@

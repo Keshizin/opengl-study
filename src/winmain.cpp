@@ -13,6 +13,8 @@ extern "C" {
 	#include <jpeg/jpeglib.h>
 }
 
+#include <myres.h>
+
 // Define a estrutura de uma imagem
 typedef struct
 {
@@ -58,7 +60,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	myWindowClass.cbClsExtra = 0;
 	myWindowClass.cbWndExtra = 0;
 	myWindowClass.hInstance = hInstance; // obrigatório
-	myWindowClass.hIcon = 0;
+	myWindowClass.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_MYICON)); 
 	myWindowClass.hCursor = LoadCursor(NULL, IDC_ARROW);
 	myWindowClass.hbrBackground = 0;
 	myWindowClass.lpszMenuName = 0;
@@ -854,7 +856,7 @@ void drawGLWindow(HDC hDC)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glColor3f(0.09f, 0.4f, 0.018f);
 	//glRasterPos2i(0, 0);
-	glDrawPixels(globalImg->dimx, globalImg->dimy, GL_RGB, GL_UNSIGNED_BYTE, globalImg->data);
+	//glDrawPixels(globalImg->dimx, globalImg->dimy, GL_RGB, GL_UNSIGNED_BYTE, globalImg->data);
 	SwapBuffers(hDC);
 }
 
