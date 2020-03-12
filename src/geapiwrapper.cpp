@@ -1,4 +1,8 @@
 #include <geapiwrapper.h>
+#include <iostream>
+#include <GL/gl.h>
+
+void resizeGLWindow(int width, int height);
 
 GEApiWrapper::GEApiWrapper()
 {
@@ -63,12 +67,12 @@ int GEApiWrapper::createWindow(int width, int height, std::string windowName)
 	// DWORD dwStyle = WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME;
 
 	// Janela não redimensionável (somente com a barra de títulos)
-	DWORD dwExStyle = WS_EX_APPWINDOW;
-	DWORD dwStyle = WS_POPUP | WS_CAPTION | WS_SYSMENU;
+	// DWORD dwExStyle = WS_EX_APPWINDOW;
+	// DWORD dwStyle = WS_POPUP | WS_CAPTION | WS_SYSMENU;
 
 	// Janela com todas as opções
-	// DWORD dwExStyle = WS_EX_APPWINDOW;
-	// DWORD dwStyle = WS_OVERLAPPEDWINDOW;
+	DWORD dwExStyle = WS_EX_APPWINDOW;
+	DWORD dwStyle = WS_OVERLAPPEDWINDOW;
 
 	AdjustWindowRectEx(&windowSize, dwStyle, FALSE, dwExStyle);
 
@@ -88,41 +92,41 @@ int GEApiWrapper::createWindow(int width, int height, std::string windowName)
 		GetModuleHandle(NULL),
 		NULL);
 
-	// static PIXELFORMATDESCRIPTOR pfd =
-	// {
-	// 	sizeof(PIXELFORMATDESCRIPTOR), // nSize
-	// 	1, // nVersion
-	// 	PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER, // dwFlags
-	// 	PFD_TYPE_RGBA, // iPixelType
-	// 	32, // cColorBits
-	// 	0, // cRedBits
-	// 	0, // cRedShift
-	// 	0, // cGreenBits
-	// 	0, // cGreenShift
-	// 	0, // cBlueBits
-	// 	0, // cBlueShift
-	// 	0, // cAlphaBits
-	// 	0, // cAlphaShift
-	// 	0, // cAccumBits
-	// 	0, // cAccumRedBits
-	// 	0, // cAccumGreenBits
-	// 	0, // cAccumBlueBits
-	// 	0, // cAccumAlphaBits
-	// 	32, // cDepthBits
-	// 	0, // cStencilBits
-	// 	0, // cAuxBuffers
-	// 	PFD_MAIN_PLANE, // iLayerType
-	// 	0, // bReserved
-	// 	0, // dwLayerMask
-	// 	0, // dwVisibleMask
-	// 	0 // dwDamageMask
-	// };
+	static PIXELFORMATDESCRIPTOR pfd =
+	{
+		sizeof(PIXELFORMATDESCRIPTOR), // nSize
+		1, // nVersion
+		PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER, // dwFlags
+		PFD_TYPE_RGBA, // iPixelType
+		32, // cColorBits
+		0, // cRedBits
+		0, // cRedShift
+		0, // cGreenBits
+		0, // cGreenShift
+		0, // cBlueBits
+		0, // cBlueShift
+		0, // cAlphaBits
+		0, // cAlphaShift
+		0, // cAccumBits
+		0, // cAccumRedBits
+		0, // cAccumGreenBits
+		0, // cAccumBlueBits
+		0, // cAccumAlphaBits
+		32, // cDepthBits
+		0, // cStencilBits
+		0, // cAuxBuffers
+		PFD_MAIN_PLANE, // iLayerType
+		0, // bReserved
+		0, // dwLayerMask
+		0, // dwVisibleMask
+		0 // dwDamageMask
+	};
 
-	// hDC = GetDC(hWindow);
-	// GLuint PixelFormat = ChoosePixelFormat(hDC, &pfd);
-	// SetPixelFormat(hDC, PixelFormat, &pfd);
-	// hRC = wglCreateContext(hDC);
-	// wglMakeCurrent(hDC, hRC);
+	hDC = GetDC(hWindow);
+	GLuint PixelFormat = ChoosePixelFormat(hDC, &pfd);
+	SetPixelFormat(hDC, PixelFormat, &pfd);
+	hRC = wglCreateContext(hDC);
+	wglMakeCurrent(hDC, hRC);
 }
 
 int GEApiWrapper::destroyWindow()
@@ -145,6 +149,7 @@ int GEApiWrapper::showWindow()
 
 LRESULT CALLBACK WindowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	//std::cout << "> WindowProcedure" << std::endl;
 	// std::cout << "> WindowProcedure call..."
 	// 	<< "\n   MSG: " << uMsg
 	// 	<< "\n   WPARAM: " << wParam
@@ -186,7 +191,7 @@ LRESULT CALLBACK WindowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 			// 	<< "\n    HEIGHT: " << HIWORD(lParam) // client area
 			// 	<< std::endl;
 
-			//resizeGLWindow(LOWORD(lParam), HIWORD(lParam));
+			resizeGLWindow(LOWORD(lParam), HIWORD(lParam));
 			break;
 
 		case WM_CLOSE:

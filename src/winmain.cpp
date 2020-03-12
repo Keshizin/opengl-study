@@ -1,5 +1,6 @@
 #include <windows.h>
 #include <iostream>
+#include <iomanip>
 #include <GL/gl.h>
 #include <GL/glu.h>
 
@@ -31,6 +32,10 @@ typedef struct
 
 TEX *globalImg;
 
+float red = 0.9f;
+float green = 0.4f;
+float blue = 0.018f; 
+
 void resizeGLWindow(int width, int height);
 void initGL();
 void drawGLWindow(HDC hDC);
@@ -55,51 +60,68 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	initGL();
 
+	// -------------------------------------------------------------------------
+	// MAIN LOOP
+	// -------------------------------------------------------------------------
+	unsigned int currentTime;
+	unsigned int frameTime;
+	unsigned int lastTime = 0;
+	unsigned int framePerSecond;
+	unsigned int frameCounter = 0;
+	unsigned int timeAccum = 0;
+	std::cout << "current time: " << currentTime << std::endl;
+
+	// Main Loop
 	while(!isDone)
 	{
-		ret = PeekMessage(&msg, NULL, 0, 0, PM_REMOVE);
-		// ret = GetMessage(&msg, NULL, 0, 0); // Testar novamente quando o contador de FPS estiver pronto
+		// while(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+		// {
+		// 	if(msg.message == WM_QUIT)
+		// 	{
+		// 		myWindow.destroyWindow();
+		// 		isDone = true;
+		// 	}
+		// 	std::cout << "> PeekMessage" << std::endl;
+		// 	TranslateMessage(&msg);
+		// 	DispatchMessage(&msg);
+		// }
 
-		// std::cout << "> GetMessage (" << counter << ") call..."
-		// 	<< "\n   Ret: " << ret
-		// 	<< "\n   Msg: " << msg.message
-		// 	<< std::endl;
-
-		if(ret)
+		if(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
 		{
-			// std::cout << "> PeekMessage (" << counter << ") call..."
-			// 	<< "\n   Ret: " << ret
-			// 	<< "\n   Msg: " << msg.message
-			// 	<< std::endl;
-
 			if(msg.message == WM_QUIT)
 			{
 				myWindow.destroyWindow();
 				isDone = true;
 			}
 
+			//std::cout << "> PeekMessage" << std::endl;
+
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
-		else
-		{
-			// LOOP PRINCIPAL
-			//drawGLWindow(hDC);
-		}
-	}
 
-	// LOOP ALTERNATIVO
-	// while (running) {
-	//    MSG msg;
-	//    while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
-	//       TranslateMessage(&msg);
-	//       DispatchMessage(&msg);
-	//    }
-	//    Update();
-	//    Draw();
-	//    SwapBuffers(m_opaqueWindowData->m_hdc);
-	//    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	// }
+		do
+		{
+			currentTime = GetTickCount();
+			frameTime = (currentTime > lastTime) ? currentTime - lastTime : 0;
+			lastTime = currentTime >= lastTime ? lastTime : currentTime;
+		} while(!(frameTime >= 5));
+
+		timeAccum += frameTime;
+		frameCounter++;
+
+		if(timeAccum >= 1000)
+		{
+			framePerSecond = frameCounter;
+			frameCounter = 0;
+			timeAccum = 0;
+
+			std::cout << "FPS: " << framePerSecond << " - frame time: " << frameTime << std::endl;
+		}
+
+		lastTime = currentTime;
+		drawGLWindow(apiWrapper->getHDC());
+	}
 
 	delete apiWrapper;
 	std::cout << ">   END OF APPLICATION!" << std::endl;
@@ -121,6 +143,10 @@ void resizeGLWindow(int width, int height)
 	gluOrtho2D(0, width, 0, height);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
+
+	red--;
+	green++;
+	blue++;
 }
 
 void initGL()
@@ -140,7 +166,7 @@ void initGL()
 void drawGLWindow(HDC hDC)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glColor3f(0.09f, 0.4f, 0.018f);
+	glColor3f(red, green, blue);
 	//glRasterPos2i(0, 0);
 	//glDrawPixels(globalImg->dimx, globalImg->dimy, GL_RGB, GL_UNSIGNED_BYTE, globalImg->data);
 	SwapBuffers(hDC);

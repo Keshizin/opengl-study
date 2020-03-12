@@ -16,6 +16,8 @@ public:
 	int destroyWindow();
 	int showWindow();
 
+	HDC getHDC() { return hDC; }
+
 private:
 	std::string windowClassName;
 	HWND hWindow;
