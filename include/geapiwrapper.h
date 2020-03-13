@@ -3,8 +3,7 @@
 
 #include <windows.h>
 #include <string>
-
-LRESULT CALLBACK WindowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+#include <geevthandler.h>
 
 class GEApiWrapper
 {
@@ -18,11 +17,17 @@ public:
 
 	HDC getHDC() { return hDC; }
 
+	void setEventHandler(GEEventHandler *eventHandler);
+
+	static LRESULT CALLBACK windowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam); 
+
 private:
 	std::string windowClassName;
 	HWND hWindow;
 	HDC hDC;
 	HGLRC hRC;
+
+	static GEEventHandler *eventHandler;
 };
 
 #endif

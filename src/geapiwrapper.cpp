@@ -2,6 +2,8 @@
 #include <iostream>
 #include <GL/gl.h>
 
+GEEventHandler *GEApiWrapper::eventHandler;
+
 void resizeGLWindow(int width, int height);
 
 GEApiWrapper::GEApiWrapper()
@@ -15,7 +17,7 @@ int GEApiWrapper::initWindow()
 
 	windowClass.cbSize = sizeof(WNDCLASSEX);
 	windowClass.style = CS_DBLCLKS | CS_HREDRAW | CS_OWNDC | CS_VREDRAW;
-	windowClass.lpfnWndProc = WindowProcedure; // obrigatório
+	windowClass.lpfnWndProc = windowProcedure; // obrigatório
 	windowClass.cbClsExtra = 0;
 	windowClass.cbWndExtra = 0;
 	//windowClass.hInstance = hInstance; // obrigatório
@@ -147,21 +149,10 @@ int GEApiWrapper::showWindow()
 	}
 }
 
-LRESULT CALLBACK WindowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK GEApiWrapper::windowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	//std::cout << "> WindowProcedure" << std::endl;
-	// std::cout << "> WindowProcedure call..."
-	// 	<< "\n   MSG: " << uMsg
-	// 	<< "\n   WPARAM: " << wParam
-	// 	<< "\n   LPARAM: " << lParam
-	// 	<< std::endl;
-
 	switch(uMsg)
 	{
-		// case WM_NULL: // no operation
-		// 	std::cout << ">   WM_NULL: " << uMsg << std::endl; 
-		// 	break;
-
 		// ----------------------------------------------------------------------
 		//    TRATAMENTO DA JANELA WINDOW
 		// ----------------------------------------------------------------------
@@ -213,243 +204,81 @@ LRESULT CALLBACK WindowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 		//       - WM_MOUSELAST *filter
 		// ----------------------------------------------------------------------
 		case WM_LBUTTONDOWN:
-			// std::cout
-			// 	<< ">   WM_LBUTTONDOWN: " << uMsg
-			// 	<< "\n    Virtual Key: " << wParam
-			// 	<< "\n    (mouse) x: " << LOWORD(lParam)
-			// 	<< "\n    (mouse) y: " << HIWORD(lParam)
-			// 	<< std::endl;
-
+			eventHandler->mouseEvent(1, 1, LOWORD(lParam), HIWORD(lParam));
 			break;
 
 		case WM_LBUTTONUP:
-			// std::cout
-			// 	<< ">   WM_LBUTTONUP: " << uMsg
-			// 	<< "\n    Virtual Key: " << wParam
-			// 	<< "\n    (mouse) x: " << LOWORD(lParam)
-			// 	<< "\n    (mouse) y: " << HIWORD(lParam)
-			// 	<< std::endl;
-
+			eventHandler->mouseEvent(1, 0, LOWORD(lParam), HIWORD(lParam));
 			break;
 
 		case WM_LBUTTONDBLCLK:
-			// std::cout
-			// 	<< ">   WM_LBUTTONDBLCLK: " << uMsg
-			// 	<< "\n    Virtual Key: " << wParam
-			// 	<< "\n    (mouse) x: " << LOWORD(lParam)
-			// 	<< "\n    (mouse) y: " << HIWORD(lParam)
-			// 	<< std::endl;
-
 			break;
 
 		case WM_NCLBUTTONDOWN:
-			// std::cout
-			// 	<< ">   WM_NCLBUTTONDOWN: " << uMsg
-			// 	<< "\n    Virtual Key: " << wParam
-			// 	<< "\n    (mouse) x: " << LOWORD(lParam)
-			// 	<< "\n    (mouse) y: " << HIWORD(lParam)
-			// 	<< std::endl;
-
 			break;
 
 		case WM_NCLBUTTONUP:
-			// std::cout
-			// 	<< ">   WM_NCLBUTTONUP: " << uMsg
-			// 	<< "\n    Virtual Key: " << wParam
-			// 	<< "\n    (mouse) x: " << LOWORD(lParam)
-			// 	<< "\n    (mouse) y: " << HIWORD(lParam)
-			// 	<< std::endl;
-
 			break;
 
 		case WM_NCLBUTTONDBLCLK:
-			// std::cout
-			// 	<< ">   WM_NCLBUTTONDBLCLK: " << uMsg
-			// 	<< "\n    Virtual Key: " << wParam
-			// 	<< "\n    (mouse) x: " << LOWORD(lParam)
-			// 	<< "\n    (mouse) y: " << HIWORD(lParam)
-			// 	<< std::endl;
-
 			break;
 
 		case WM_MBUTTONDOWN:
-			// std::cout
-			// 	<< ">   WM_MBUTTONDOWN: " << uMsg
-			// 	<< "\n    Virtual Key: " << wParam
-			// 	<< "\n    (mouse) x: " << LOWORD(lParam)
-			// 	<< "\n    (mouse) y: " << HIWORD(lParam)
-			// 	<< std::endl;
-
+			eventHandler->mouseEvent(2, 1, LOWORD(lParam), HIWORD(lParam));
 			break;
 
 		case WM_MBUTTONUP:
-			// std::cout
-			// 	<< ">   WM_MBUTTONUP: " << uMsg
-			// 	<< "\n    Virtual Key: " << wParam
-			// 	<< "\n    (mouse) x: " << LOWORD(lParam)
-			// 	<< "\n    (mouse) y: " << HIWORD(lParam)
-			// 	<< std::endl;
-
+			eventHandler->mouseEvent(2, 0, LOWORD(lParam), HIWORD(lParam));
 			break;
 
 		case WM_MBUTTONDBLCLK:
-			// std::cout
-			// 	<< ">   WM_MBUTTONDBLCLK: " << uMsg
-			// 	<< "\n    Virtual Key: " << wParam
-			// 	<< "\n    (mouse) x: " << LOWORD(lParam)
-			// 	<< "\n    (mouse) y: " << HIWORD(lParam)
-			// 	<< std::endl;
-
 			break;
 		
 		case WM_NCMBUTTONDOWN:
-			// std::cout
-			// 	<< ">   WM_NCMBUTTONDOWN: " << uMsg
-			// 	<< "\n    Virtual Key: " << wParam
-			// 	<< "\n    (mouse) x: " << LOWORD(lParam)
-			// 	<< "\n    (mouse) y: " << HIWORD(lParam)
-			// 	<< std::endl;
-
 			break;
 
 		case WM_NCMBUTTONUP:
-			// std::cout
-			// 	<< ">   WM_NCMBUTTONUP: " << uMsg
-			// 	<< "\n    Virtual Key: " << wParam
-			// 	<< "\n    (mouse) x: " << LOWORD(lParam)
-			// 	<< "\n    (mouse) y: " << HIWORD(lParam)
-			// 	<< std::endl;
-
 			break;
 
 		case WM_NCMBUTTONDBLCLK:
-			// std::cout
-			// 	<< ">   WM_NCMBUTTONDBLCLK: " << uMsg
-			// 	<< "\n    Virtual Key: " << wParam
-			// 	<< "\n    (mouse) x: " << LOWORD(lParam)
-			// 	<< "\n    (mouse) y: " << HIWORD(lParam)
-			// 	<< std::endl;
-
 			break;
 
 		case WM_RBUTTONDOWN:
-			// std::cout
-			// 	<< ">   WM_RBUTTONDOWN: " << uMsg
-			// 	<< "\n    Virtual Key: " << wParam
-			// 	<< "\n    (mouse) x: " << LOWORD(lParam)
-			// 	<< "\n    (mouse) y: " << HIWORD(lParam)
-			// 	<< std::endl;
-
+			eventHandler->mouseEvent(3, 0, LOWORD(lParam), HIWORD(lParam));
 			break;
 
 		case WM_RBUTTONUP:
-			// std::cout
-			// 	<< ">   WM_RBUTTONUP: " << uMsg
-			// 	<< "\n    Virtual Key: " << wParam
-			// 	<< "\n    (mouse) x: " << LOWORD(lParam)
-			// 	<< "\n    (mouse) y: " << HIWORD(lParam)
-			// 	<< std::endl;
-
+			eventHandler->mouseEvent(3, 0, LOWORD(lParam), HIWORD(lParam));
 			break;
 
 		case WM_RBUTTONDBLCLK:
-			// std::cout
-			// 	<< ">   WM_RBUTTONDBLCLK: " << uMsg
-			// 	<< "\n    Virtual Key: " << wParam
-			// 	<< "\n    (mouse) x: " << LOWORD(lParam)
-			// 	<< "\n    (mouse) y: " << HIWORD(lParam)
-			// 	<< std::endl;
-
 			break;
 
 		case WM_NCRBUTTONDOWN:
-			// std::cout
-			// 	<< ">   WM_NCRBUTTONDOWN: " << uMsg
-			// 	<< "\n    Virtual Key: " << wParam
-			// 	<< "\n    (mouse) x: " << LOWORD(lParam)
-			// 	<< "\n    (mouse) y: " << HIWORD(lParam)
-			// 	<< std::endl;
-
 			break;
 
 		case WM_NCRBUTTONUP:
-			// std::cout
-			// 	<< ">   WM_NCRBUTTONUP: " << uMsg
-			// 	<< "\n    Virtual Key: " << wParam
-			// 	<< "\n    (mouse) x: " << LOWORD(lParam)
-			// 	<< "\n    (mouse) y: " << HIWORD(lParam)
-			// 	<< std::endl;
-
 			break;
 
 		case WM_NCRBUTTONDBLCLK:
-			// std::cout
-			// 	<< ">   WM_NCRBUTTONDBLCLK: " << uMsg
-			// 	<< "\n    Virtual Key: " << wParam
-			// 	<< "\n    (mouse) x: " << LOWORD(lParam)
-			// 	<< "\n    (mouse) y: " << HIWORD(lParam)
-			// 	<< std::endl;
-
 			break;
 
 		case WM_XBUTTONDOWN:
-			// std::cout
-			// 	<< ">   WM_XBUTTONDOWN: " << uMsg
-			// 	<< "\n    Virtual Key: " << wParam
-			// 	<< "\n    (mouse) x: " << LOWORD(lParam)
-			// 	<< "\n    (mouse) y: " << HIWORD(lParam)
-			// 	<< std::endl;
-
 			break;
 
 		case WM_XBUTTONUP:
-			// std::cout
-			// 	<< ">   WM_XBUTTONUP: " << uMsg
-			// 	<< "\n    Virtual Key: " << wParam
-			// 	<< "\n    (mouse) x: " << LOWORD(lParam)
-			// 	<< "\n    (mouse) y: " << HIWORD(lParam)
-			// 	<< std::endl;
-
 			break;
 
 		case WM_XBUTTONDBLCLK:
-			// std::cout
-			// 	<< ">   WM_XBUTTONDBLCLK: " << uMsg
-			// 	<< "\n    Virtual Key: " << wParam
-			// 	<< "\n    (mouse) x: " << LOWORD(lParam)
-			// 	<< "\n    (mouse) y: " << HIWORD(lParam)
-			// 	<< std::endl;
-
 			break;
 
 		case WM_NCXBUTTONDOWN:
-			// std::cout
-			// 	<< ">   WM_NCXBUTTONDOWN: " << uMsg
-			// 	<< "\n    Virtual Key: " << wParam
-			// 	<< "\n    (mouse) x: " << LOWORD(lParam)
-			// 	<< "\n    (mouse) y: " << HIWORD(lParam)
-			// 	<< std::endl;
-
 			break;
 
 		case WM_NCXBUTTONUP:
-			// std::cout
-			// 	<< ">   WM_NCXBUTTONUP: " << uMsg
-			// 	<< "\n    Virtual Key: " << wParam
-			// 	<< "\n    (mouse) x: " << LOWORD(lParam)
-			// 	<< "\n    (mouse) y: " << HIWORD(lParam)
-			// 	<< std::endl;
-
 			break;
 
 		case WM_NCXBUTTONDBLCLK:
-			// std::cout
-			// 	<< ">   WM_NCXBUTTONDBLCLK: " << uMsg
-			// 	<< "\n    Virtual Key: " << wParam
-			// 	<< "\n    (mouse) x: " << LOWORD(lParam)
-			// 	<< "\n    (mouse) y: " << HIWORD(lParam)
-			// 	<< std::endl;
-
 			break;
 
 		// ----------------------------------------------------------------------
@@ -750,6 +579,11 @@ LRESULT CALLBACK WindowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 	}
 
 	return DefWindowProc(hWnd, uMsg, wParam, lParam);
+}
+
+void GEApiWrapper::setEventHandler(GEEventHandler *eventHandler)
+{
+	this->eventHandler = eventHandler;
 }
 
 // Complete list of messages

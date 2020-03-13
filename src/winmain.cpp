@@ -6,6 +6,7 @@
 
 #include <gewin.h>
 #include <geapiwrapper.h>
+#include <geevthandler.h>
 
 #define XMD_H	
 #define HAVE_BOOLEAN
@@ -18,6 +19,28 @@ extern "C" {
 }
 
 #include <myres.h>
+
+class UserEventHandler : public GEEventHandler
+{
+public:
+	void mouseEvent(int button, int state, int x, int y)
+	{
+		std::cout << "> Mouse Event"
+			<< "\n\tbutton: " << button
+			<< "\n\tstate: " << state
+			<< "\n\tx: " << x
+			<< "\n\ty: " << y
+			<< "\n" << std::endl;
+	}
+
+	void mouseMotionEvent(int x, int y)
+	{
+		std::cout << "> Mouse Motion Event"
+			<< "\n\tx: " << x
+			<< "\n\ty: " << y
+			<< "\n" << std::endl;
+	}
+};
 
 // Define a estrutura de uma imagem
 typedef struct
@@ -32,10 +55,6 @@ typedef struct
 
 TEX *globalImg;
 
-float red = 0.9f;
-float green = 0.4f;
-float blue = 0.018f; 
-
 void resizeGLWindow(int width, int height);
 void initGL();
 void drawGLWindow(HDC hDC);
@@ -49,7 +68,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	int ret;
 	bool isDone = false;
 
+	UserEventHandler *userEventHandler = new UserEventHandler();
+
 	GEApiWrapper *apiWrapper = new GEApiWrapper();
+	apiWrapper->setEventHandler(userEventHandler);
 
 	GEWindow myWindow(apiWrapper);
 	myWindow.setWindowName("BPM GAME ENGINE");
@@ -123,7 +145,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		drawGLWindow(apiWrapper->getHDC());
 	}
 
+	delete userEventHandler;
 	delete apiWrapper;
+
 	std::cout << ">   END OF APPLICATION!" << std::endl;
 	return 0;
 }
@@ -143,10 +167,6 @@ void resizeGLWindow(int width, int height)
 	gluOrtho2D(0, width, 0, height);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-
-	red--;
-	green++;
-	blue++;
 }
 
 void initGL()
@@ -166,7 +186,7 @@ void initGL()
 void drawGLWindow(HDC hDC)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glColor3f(red, green, blue);
+	glColor3f(0.9f, 0.4f, 0.018f);
 	//glRasterPos2i(0, 0);
 	//glDrawPixels(globalImg->dimx, globalImg->dimy, GL_RGB, GL_UNSIGNED_BYTE, globalImg->data);
 	SwapBuffers(hDC);
