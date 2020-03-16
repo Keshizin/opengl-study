@@ -10,6 +10,7 @@ public:
 	GEWindow(GEApiWrapper *apiWrapper);
 
 	int createWindow();
+	int showWindow();
 	int destroyWindow();
 
 	// Getters and Setters

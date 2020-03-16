@@ -4,8 +4,10 @@
 class GEEventHandler
 {
 public:
-	virtual void mouseEvent(int button, int state, int x, int y) = 0;
-	virtual void mouseMotionEvent(int x, int y) = 0;
+	virtual void drawFrame() {}
+	virtual void mouseEvent(int button, int state, int x, int y) {}
+	virtual void mouseMotionEvent(int x, int y) {}
+	virtual void resizeWindow(int width, int height) {}
 };
 
 #endif

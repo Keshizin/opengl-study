@@ -1,7 +1,6 @@
-#ifndef GAME_ENGINE_WINDOW_API_WRAPPER_H
-#define GAME_ENGINE_WINDOW_API_WRAPPER_H
+#ifndef GAME_ENGINE_API_WRAPPER_H
+#define GAME_ENGINE_API_WRAPPER_H
 
-#include <windows.h>
 #include <string>
 #include <geevthandler.h>
 
@@ -9,25 +8,20 @@ class GEApiWrapper
 {
 public:
 	GEApiWrapper();
-
-	int initWindow();
-	int createWindow(int width, int height, std::string);
-	int destroyWindow();
-	int showWindow();
-
-	HDC getHDC() { return hDC; }
-
 	void setEventHandler(GEEventHandler *eventHandler);
+	GEEventHandler * getEventHandler();
 
-	static LRESULT CALLBACK windowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam); 
+	// Common methods for all OS and Rendering APIs that must redefined.
+	virtual int initializeWindow() {return 1;}
+	virtual int initializeRenderingSystem() {return 1;}
+	virtual int createWindow(int width, int height, std::string name) {return 1;}
+	virtual int destroyWindow() {return 1;}
+	virtual int showWindow() {return 1;}
+
+protected:
+	static GEEventHandler *eventHandler;
 
 private:
-	std::string windowClassName;
-	HWND hWindow;
-	HDC hDC;
-	HGLRC hRC;
-
-	static GEEventHandler *eventHandler;
 };
 
 #endif

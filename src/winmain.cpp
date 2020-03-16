@@ -5,8 +5,9 @@
 #include <GL/glu.h>
 
 #include <gewin.h>
-#include <geapiwrapper.h>
+#include <gewinapiwrapper.h>
 #include <geevthandler.h>
+
 
 #define XMD_H	
 #define HAVE_BOOLEAN
@@ -23,13 +24,24 @@ extern "C" {
 class UserEventHandler : public GEEventHandler
 {
 public:
+	void drawFrame()
+	{
+		//std::cout << "> Draw Frame Event\n" << std::endl;
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		// glColor3f(0.9f, 0.4f, 0.018f);
+		// glRasterPos2i(0, 0);
+		// glDrawPixels(globalImg->dimx, globalImg->dimy, GL_RGB, GL_UNSIGNED_BYTE, globalImg->data);
+		// Specific for rendering context type
+		SwapBuffers(hDC);
+	}
+
 	void mouseEvent(int button, int state, int x, int y)
 	{
 		std::cout << "> Mouse Event"
 			<< "\n\tbutton: " << button
-			<< "\n\tstate: " << state
-			<< "\n\tx: " << x
-			<< "\n\ty: " << y
+			<< "\n\t state: " << state
+			<< "\n\t     x: " << x
+			<< "\n\t     y: " << y
 			<< "\n" << std::endl;
 	}
 
@@ -40,6 +52,30 @@ public:
 			<< "\n\ty: " << y
 			<< "\n" << std::endl;
 	}
+
+	void resizeWindow(int width, int height)
+	{
+		std::cout << "> Resize Window Event"
+			<< "\n\twidth: " << width
+			<< "\n\theight: " << height
+			<< "\n" << std::endl;
+
+		// user configurations
+		glViewport(0, 0, width, height);
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+		gluOrtho2D(0, width, 0, height);
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+	}
+
+	void setDC(HDC hDC)
+	{
+		this->hDC = hDC;
+	}
+
+private:
+	HDC hDC;
 };
 
 // Define a estrutura de uma imagem
@@ -55,58 +91,67 @@ typedef struct
 
 TEX *globalImg;
 
-void resizeGLWindow(int width, int height);
 void initGL();
-void drawGLWindow(HDC hDC);
 
 TEX *LoadJPG(const char *filename, bool inverte = true);
 void DecodeJPG(jpeg_decompress_struct* cinfo, TEX *pImageData, bool inverte);
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
-	MSG msg;
-	int ret;
-	bool isDone = false;
-
+	std::cout << "> Starting application" << std::endl;
 	UserEventHandler *userEventHandler = new UserEventHandler();
 
-	GEApiWrapper *apiWrapper = new GEApiWrapper();
-	apiWrapper->setEventHandler(userEventHandler);
+	GEWinApiWrapper *winApiWrapper = new GEWinApiWrapper();
+	winApiWrapper->setEventHandler(userEventHandler);
+	winApiWrapper->setWindowClassName("MYWINDOWCLASS");
+	GEApiWrapper *apiWrapper = winApiWrapper;
 
 	GEWindow myWindow(apiWrapper);
 	myWindow.setWindowName("BPM GAME ENGINE");
 	myWindow.setWidth(640);
 	myWindow.setHeight(480);
 
-	myWindow.createWindow();
+	if(myWindow.createWindow())
+		std::cout << "> Window created with success!" << std::endl;
+	else
+		std::cout << "(!) Fail to create window!" << std::endl;
+
+	userEventHandler->setDC(winApiWrapper->getDC());
+	
+	myWindow.showWindow();
+
+	MSG msg;
+	// int ret;
+	bool isDone = false;
 
 	initGL();
 
-	// -------------------------------------------------------------------------
-	// MAIN LOOP
-	// -------------------------------------------------------------------------
-	unsigned int currentTime;
-	unsigned int frameTime;
-	unsigned int lastTime = 0;
-	unsigned int framePerSecond;
-	unsigned int frameCounter = 0;
-	unsigned int timeAccum = 0;
-	std::cout << "current time: " << currentTime << std::endl;
+	// // -------------------------------------------------------------------------
+	// // MAIN LOOP
+	// // -------------------------------------------------------------------------
+	// unsigned int currentTime;
+	// unsigned int frameTime;
+	// unsigned int lastTime = 0;
+	// unsigned int framePerSecond;
+	// unsigned int frameCounter = 0;
+	// unsigned int timeAccum = 0;
+	// std::cout << "current time: " << currentTime << std::endl;
 
-	// Main Loop
+	// // Main Loop
 	while(!isDone)
 	{
-		// while(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
-		// {
-		// 	if(msg.message == WM_QUIT)
-		// 	{
-		// 		myWindow.destroyWindow();
-		// 		isDone = true;
-		// 	}
-		// 	std::cout << "> PeekMessage" << std::endl;
-		// 	TranslateMessage(&msg);
-		// 	DispatchMessage(&msg);
-		// }
+		//std::cout << "@deb | Main Loop |\n" << std::endl;
+	// 	// while(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+	// 	// {
+	// 	// 	if(msg.message == WM_QUIT)
+	// 	// 	{
+	// 	// 		myWindow.destroyWindow();
+	// 	// 		isDone = true;
+	// 	// 	}
+	// 	// 	std::cout << "> PeekMessage" << std::endl;
+	// 	// 	TranslateMessage(&msg);
+	// 	// 	DispatchMessage(&msg);
+	// 	// }
 
 		if(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
 		{
@@ -116,57 +161,39 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 				isDone = true;
 			}
 
-			//std::cout << "> PeekMessage" << std::endl;
-
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
 
-		do
-		{
-			currentTime = GetTickCount();
-			frameTime = (currentTime > lastTime) ? currentTime - lastTime : 0;
-			lastTime = currentTime >= lastTime ? lastTime : currentTime;
-		} while(!(frameTime >= 5));
+	// 	do
+	// 	{
+	// 		currentTime = GetTickCount();
+	// 		frameTime = (currentTime > lastTime) ? currentTime - lastTime : 0;
+	// 		lastTime = currentTime >= lastTime ? lastTime : currentTime;
+	// 	} while(!(frameTime >= 5));
 
-		timeAccum += frameTime;
-		frameCounter++;
+	// 	timeAccum += frameTime;
+	// 	frameCounter++;
 
-		if(timeAccum >= 1000)
-		{
-			framePerSecond = frameCounter;
-			frameCounter = 0;
-			timeAccum = 0;
+	// 	if(timeAccum >= 1000)
+	// 	{
+	// 		framePerSecond = frameCounter;
+	// 		frameCounter = 0;
+	// 		timeAccum = 0;
 
-			std::cout << "FPS: " << framePerSecond << " - frame time: " << frameTime << std::endl;
-		}
+	// 		std::cout << "FPS: " << framePerSecond << " - frame time: " << frameTime << std::endl;
+	// 	}
 
-		lastTime = currentTime;
-		drawGLWindow(apiWrapper->getHDC());
+	// 	lastTime = currentTime;
+		apiWrapper->getEventHandler()->drawFrame();
+	// 	drawGLWindow(apiWrapper->getHDC());
 	}
 
 	delete userEventHandler;
-	delete apiWrapper;
+	delete winApiWrapper;
 
-	std::cout << ">   END OF APPLICATION!" << std::endl;
+	std::cout << "> End of application!" << std::endl;
 	return 0;
-}
-
-void resizeGLWindow(int width, int height)
-{
-	std::cout
-		<< "CALLBACK - resizeGLWindow"
-		<< "\n   -> width: " << width
-		<< "\n   -> height: " << height
-		<< std::endl;
-
-	glViewport(0, 0, width, height);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	//gluOrtho2D(0, width, 0, height);
-	gluOrtho2D(0, width, 0, height);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
 }
 
 void initGL()
@@ -181,15 +208,6 @@ void initGL()
 	glClearColor(0.133f, 0.161f, 0.173f, 1.0f);
 	//glClearColor(0.09f, 0.4f, 0.018f, 1.0f); // logo
 	glPixelStorei (GL_UNPACK_ALIGNMENT, 1);
-}
-
-void drawGLWindow(HDC hDC)
-{
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glColor3f(0.9f, 0.4f, 0.018f);
-	//glRasterPos2i(0, 0);
-	//glDrawPixels(globalImg->dimx, globalImg->dimy, GL_RGB, GL_UNSIGNED_BYTE, globalImg->data);
-	SwapBuffers(hDC);
 }
 
 TEX *LoadJPG(const char *filename, bool inverte)
