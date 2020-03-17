@@ -129,31 +129,31 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	// // -------------------------------------------------------------------------
 	// // MAIN LOOP
 	// // -------------------------------------------------------------------------
+	// Possibilidade de deixar livre ou fixar o tempo (em ms) de cada quado
+	// - variable frame rate
+	// - frame-rate governing
+	unsigned int frameTime = 0;
+	unsigned int numberOfFrames = 0;
+	LARGE_INTEGER startTime;
+	LARGE_INTEGER endTime;
+	LARGE_INTEGER frequency;
+
 	// unsigned int currentTime;
-	// unsigned int frameTime;
 	// unsigned int lastTime = 0;
 	// unsigned int framePerSecond;
 	// unsigned int frameCounter = 0;
 	// unsigned int timeAccum = 0;
-	// std::cout << "current time: " << currentTime << std::endl;
 
-	// // Main Loop
+	QueryPerformanceFrequency(&frequency);
+	std::cout << "Frequency CPU: " << frequency.QuadPart << std::endl;
+
 	while(!isDone)
 	{
-		//std::cout << "@deb | Main Loop |\n" << std::endl;
-	// 	// while(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
-	// 	// {
-	// 	// 	if(msg.message == WM_QUIT)
-	// 	// 	{
-	// 	// 		myWindow.destroyWindow();
-	// 	// 		isDone = true;
-	// 	// 	}
-	// 	// 	std::cout << "> PeekMessage" << std::endl;
-	// 	// 	TranslateMessage(&msg);
-	// 	// 	DispatchMessage(&msg);
-	// 	// }
+		// READ HIGH-RESOLUTION TIMER
+		QueryPerformanceCounter(&startTime);
 
-		if(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+		// if(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+		while(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
 		{
 			if(msg.message == WM_QUIT)
 			{
@@ -165,28 +165,37 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			DispatchMessage(&msg);
 		}
 
-	// 	do
-	// 	{
-	// 		currentTime = GetTickCount();
-	// 		frameTime = (currentTime > lastTime) ? currentTime - lastTime : 0;
-	// 		lastTime = currentTime >= lastTime ? lastTime : currentTime;
-	// 	} while(!(frameTime >= 5));
+		// do
+		// {
+		// 	currentTime = GetTickCount();
+		// 	frameTime = (currentTime > lastTime) ? currentTime - lastTime : 0;
+		// 	lastTime = currentTime >= lastTime ? lastTime : currentTime;
+		// } while(!(frameTime >= 5));
+		// timeAccum += frameTime;
+		// frameCounter++;
+		// if(timeAccum >= 1000)
+		// {
+		// 	framePerSecond = frameCounter;
+		// 	frameCounter = 0;
+		// 	timeAccum = 0;
+		// 	std::cout << "FPS: " << framePerSecond << " - frame time: " << frameTime << std::endl;
+		// }
+		// lastTime = currentTime;
+		// apiWrapper->getEventHandler()->drawFrame();
+		// drawGLWindow(apiWrapper->getHDC());
 
-	// 	timeAccum += frameTime;
-	// 	frameCounter++;
+		// READ HIGH-RESOLUTION TIMER
+		QueryPerformanceCounter(&endTime);
 
-	// 	if(timeAccum >= 1000)
-	// 	{
-	// 		framePerSecond = frameCounter;
-	// 		frameCounter = 0;
-	// 		timeAccum = 0;
-
-	// 		std::cout << "FPS: " << framePerSecond << " - frame time: " << frameTime << std::endl;
-	// 	}
-
-	// 	lastTime = currentTime;
-		apiWrapper->getEventHandler()->drawFrame();
-	// 	drawGLWindow(apiWrapper->getHDC());
+		// CALCULATE FRAME TIME
+		// Guard against loss-of-precision: convert to microseconds before dividing by ticks per second
+		// 1 seconds -> 1000 milliseconds -> microseconds = 1000000
+		LARGE_INTEGER microseconds;
+		microseconds.QuadPart = (endTime.QuadPart - startTime.QuadPart) * 1000000;
+	
+		std::cout << "frame time\n\tcycles: " << (endTime.QuadPart - startTime.QuadPart)
+			<< "\n\tmicroseconds: " << microseconds.QuadPart / frequency.QuadPart
+			<< "\n" << std::endl;
 	}
 
 	delete userEventHandler;
