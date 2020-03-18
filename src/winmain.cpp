@@ -139,6 +139,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	LARGE_INTEGER endTime;
 	LARGE_INTEGER frequency;
 	LARGE_INTEGER timer;
+	LARGE_INTEGER sleepTimer;
 	// -------------------------------------------------------------------------
 	//unsigned long long timer = 0;
 
@@ -147,6 +148,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	// unsigned int framePerSecond;
 	// unsigned int timeAccum = 0;
 	timer.QuadPart = 0;
+	sleepTimer.QuadPart = 0;
 
 	// MAIN LOOP
 	while(!isDone)
@@ -168,29 +170,28 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		}
 
 		// GAME LOOP
-		numberOfFrames++;
-
-		// do
+		// if (FRAME_RATE_GOVERNING == 1)
 		// {
-		// 	currentTime = GetTickCount();
-		// 	frameTime = (currentTime > lastTime) ? currentTime - lastTime : 0;
-		// 	lastTime = currentTime >= lastTime ? lastTime : currentTime;
-		// } while(!(frameTime >= 5));
-		// timeAccum += frameTime;
+		// 	// SLEEP MODE - FIX TO 60 FPS (Frequency / 60)
 
-		// if(timeAccum >= 1000)
-		// {
-		// 	timeAccum = 0;
+		// 	do
+		// 	{
+		// 		sleepTimer.QuadPart += endTime.QuadPart - startTime.QuadPart;
+		// 	} while(sleepTimer.QuadPart < frequency.QuadPart / 60);
+		// 	sleepTimer.QuadPart = 0;
 		// }
-		
-		// lastTime = currentTime;
-		// apiWrapper->getEventHandler()->drawFrame();
+
+		numberOfFrames++;
+		apiWrapper->getEventHandler()->drawFrame();
 		// drawGLWindow(apiWrapper->getHDC());
 
 		// READ HIGH-RESOLUTION TIMER
 		QueryPerformanceCounter(&endTime);
 		QueryPerformanceFrequency(&frequency);
 
+		// CALCULATE FRAME TIME
+		// Guard against loss-of-precision: convert to microseconds before dividing by ticks per second
+		// 1 seconds -> 1000 milliseconds -> microseconds = 1000000
 		timer.QuadPart += endTime.QuadPart - startTime.QuadPart;
 
 		// std::cout << "> frame time (ticks): " << endTime.QuadPart - startTime.QuadPart << std::endl;
@@ -206,30 +207,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			numberOfFrames = 0;
 			timer.QuadPart = 0;
 		}
-
-		// CALCULATE FRAME TIME
-		// Guard against loss-of-precision: convert to microseconds before dividing by ticks per second
-		// 1 seconds -> 1000 milliseconds -> microseconds = 1000000
-
-		// ticks.QuadPart += endTime.QuadPart - startTime.QuadPart;
-		// QueryPerformanceFrequency(&frequency);
-		// frameTime = ((endTime.QuadPart - startTime.QuadPart) * 1000000) / frequency.QuadPart;
-		//timer += frameTime;
-
-		// if(ticks.QuadPart >= frequency.QuadPart)
-		// {
-		// 	std::cout << "> ONE SECOND!" << std::endl;
-		// 	timer = 0;
-		// 	ticks.QuadPart = 0;
-		// }
-
-		// std::cout << "> timer: " << ticks.QuadPart << std::endl;
-
-		// std::cout << "> frame time"
-		// 	<< "\n\tcycles: " << (endTime.QuadPart - startTime.QuadPart)
-		// 	<< "\n\tmicroseconds: " << frameTime
-		// 	<< "\n\ttimer: " << timer
-		// 	<< "\n" << std::endl;
 	}
 
 	delete userEventHandler;
