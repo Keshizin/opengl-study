@@ -14,6 +14,7 @@
 
 #define WINDOW_WIDTH  600
 #define WINDOW_HEIGHT 600
+#define FRAME_RATE_GOVERNING 1
 
 extern "C" {
 	#include <jpeg/jpeglib.h>
@@ -132,21 +133,22 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	// Possibilidade de deixar livre ou fixar o tempo (em ms) de cada quado
 	// - variable frame rate
 	// - frame-rate governing
-	unsigned int frameTime = 0;
+	unsigned long long frameTime; // microseconds
 	unsigned int numberOfFrames = 0;
 	LARGE_INTEGER startTime;
 	LARGE_INTEGER endTime;
 	LARGE_INTEGER frequency;
+	LARGE_INTEGER timer;
+	// -------------------------------------------------------------------------
+	//unsigned long long timer = 0;
 
 	// unsigned int currentTime;
 	// unsigned int lastTime = 0;
 	// unsigned int framePerSecond;
-	// unsigned int frameCounter = 0;
 	// unsigned int timeAccum = 0;
+	timer.QuadPart = 0;
 
-	QueryPerformanceFrequency(&frequency);
-	std::cout << "Frequency CPU: " << frequency.QuadPart << std::endl;
-
+	// MAIN LOOP
 	while(!isDone)
 	{
 		// READ HIGH-RESOLUTION TIMER
@@ -165,6 +167,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			DispatchMessage(&msg);
 		}
 
+		// GAME LOOP
+		numberOfFrames++;
+
 		// do
 		// {
 		// 	currentTime = GetTickCount();
@@ -172,30 +177,59 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		// 	lastTime = currentTime >= lastTime ? lastTime : currentTime;
 		// } while(!(frameTime >= 5));
 		// timeAccum += frameTime;
-		// frameCounter++;
+
 		// if(timeAccum >= 1000)
 		// {
-		// 	framePerSecond = frameCounter;
-		// 	frameCounter = 0;
 		// 	timeAccum = 0;
-		// 	std::cout << "FPS: " << framePerSecond << " - frame time: " << frameTime << std::endl;
 		// }
+		
 		// lastTime = currentTime;
 		// apiWrapper->getEventHandler()->drawFrame();
 		// drawGLWindow(apiWrapper->getHDC());
 
 		// READ HIGH-RESOLUTION TIMER
 		QueryPerformanceCounter(&endTime);
+		QueryPerformanceFrequency(&frequency);
+
+		timer.QuadPart += endTime.QuadPart - startTime.QuadPart;
+
+		// std::cout << "> frame time (ticks): " << endTime.QuadPart - startTime.QuadPart << std::endl;
+		// std::cout << "> timer: " << timer.QuadPart << std::endl;
+
+		if(timer.QuadPart > frequency.QuadPart)
+		{
+			std::cout << " > FRAME STATUS"
+				<< "\n\tFPS: " << numberOfFrames
+				<< "\n\tFRAME TIME: " << endTime.QuadPart - startTime.QuadPart
+				<< "\n" << std::endl;
+
+			numberOfFrames = 0;
+			timer.QuadPart = 0;
+		}
 
 		// CALCULATE FRAME TIME
 		// Guard against loss-of-precision: convert to microseconds before dividing by ticks per second
 		// 1 seconds -> 1000 milliseconds -> microseconds = 1000000
-		LARGE_INTEGER microseconds;
-		microseconds.QuadPart = (endTime.QuadPart - startTime.QuadPart) * 1000000;
-	
-		std::cout << "frame time\n\tcycles: " << (endTime.QuadPart - startTime.QuadPart)
-			<< "\n\tmicroseconds: " << microseconds.QuadPart / frequency.QuadPart
-			<< "\n" << std::endl;
+
+		// ticks.QuadPart += endTime.QuadPart - startTime.QuadPart;
+		// QueryPerformanceFrequency(&frequency);
+		// frameTime = ((endTime.QuadPart - startTime.QuadPart) * 1000000) / frequency.QuadPart;
+		//timer += frameTime;
+
+		// if(ticks.QuadPart >= frequency.QuadPart)
+		// {
+		// 	std::cout << "> ONE SECOND!" << std::endl;
+		// 	timer = 0;
+		// 	ticks.QuadPart = 0;
+		// }
+
+		// std::cout << "> timer: " << ticks.QuadPart << std::endl;
+
+		// std::cout << "> frame time"
+		// 	<< "\n\tcycles: " << (endTime.QuadPart - startTime.QuadPart)
+		// 	<< "\n\tmicroseconds: " << frameTime
+		// 	<< "\n\ttimer: " << timer
+		// 	<< "\n" << std::endl;
 	}
 
 	delete userEventHandler;
