@@ -133,7 +133,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	// Possibilidade de deixar livre ou fixar o tempo (em ms) de cada quado
 	// - variable frame rate
 	// - frame-rate governing
-	unsigned long long frameTime; // microseconds
+	LARGE_INTEGER frameTime; // ticks
 	unsigned int numberOfFrames = 0;
 	LARGE_INTEGER startTime;
 	LARGE_INTEGER endTime;
@@ -169,43 +169,53 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			DispatchMessage(&msg);
 		}
 
-		// GAME LOOP
-		// if (FRAME_RATE_GOVERNING == 1)
-		// {
-		// 	// SLEEP MODE - FIX TO 60 FPS (Frequency / 60)
-
-		// 	do
-		// 	{
-		// 		sleepTimer.QuadPart += endTime.QuadPart - startTime.QuadPart;
-		// 	} while(sleepTimer.QuadPart < frequency.QuadPart / 60);
-		// 	sleepTimer.QuadPart = 0;
-		// }
-
 		numberOfFrames++;
-		apiWrapper->getEventHandler()->drawFrame();
+		//apiWrapper->getEventHandler()->drawFrame();
 		// drawGLWindow(apiWrapper->getHDC());
 
 		// READ HIGH-RESOLUTION TIMER
 		QueryPerformanceCounter(&endTime);
 		QueryPerformanceFrequency(&frequency);
 
+		frameTime.QuadPart = endTime.QuadPart - startTime.QuadPart;
+
 		// CALCULATE FRAME TIME
 		// Guard against loss-of-precision: convert to microseconds before dividing by ticks per second
 		// 1 seconds -> 1000 milliseconds -> microseconds = 1000000
-		timer.QuadPart += endTime.QuadPart - startTime.QuadPart;
+		timer.QuadPart += frameTime.QuadPart;
 
-		// std::cout << "> frame time (ticks): " << endTime.QuadPart - startTime.QuadPart << std::endl;
-		// std::cout << "> timer: " << timer.QuadPart << std::endl;
-
+		// ONE SECOND OUTPUT
 		if(timer.QuadPart > frequency.QuadPart)
 		{
 			std::cout << " > FRAME STATUS"
 				<< "\n\tFPS: " << numberOfFrames
-				<< "\n\tFRAME TIME: " << endTime.QuadPart - startTime.QuadPart
+				<< "\n\tFRAME TIME: " << frameTime.QuadPart
 				<< "\n" << std::endl;
 
 			numberOfFrames = 0;
 			timer.QuadPart = 0;
+		}
+
+		// FRAME RATE GOVERNING
+		if (FRAME_RATE_GOVERNING == 1)
+		{
+			int teste = 0;
+			// std::cout << "@deb | start | " << frameTime.QuadPart << " | " <<  (frequency.QuadPart / 60) << std::endl;
+			sleepTimer.QuadPart = frameTime.QuadPart;
+			QueryPerformanceCounter(&startTime);
+
+			// SLEEP MODE - FIX TO 60 FPS (Frequency / 60)
+			while(sleepTimer.QuadPart < (frequency.QuadPart / 60))
+			{
+				QueryPerformanceCounter(&endTime);
+				sleepTimer.QuadPart += (endTime.QuadPart - startTime.QuadPart);
+				teste = 1;
+			}
+
+			if(teste)
+				timer.QuadPart += sleepTimer.QuadPart;
+			// std::cout << "@deb | end | " << sleepTimer.QuadPart << std::endl;
+			//system("PAUSE");
 		}
 	}
 
