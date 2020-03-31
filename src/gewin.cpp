@@ -30,6 +30,7 @@ int GEWindow::showWindow()
 int GEWindow::destroyWindow()
 {
 	apiWrapper->destroyWindow();
+	return 1;
 }
 
 void GEWindow::setWindowName(std::string windowName)

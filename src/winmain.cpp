@@ -150,6 +150,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	timer.QuadPart = 0;
 	sleepTimer.QuadPart = 0;
 
+	system("PAUSE");
+
 	// MAIN LOOP
 	while(!isDone)
 	{
@@ -197,26 +199,26 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		}
 
 		// FRAME RATE GOVERNING
-		if (FRAME_RATE_GOVERNING == 1)
-		{
-			int teste = 0;
-			// std::cout << "@deb | start | " << frameTime.QuadPart << " | " <<  (frequency.QuadPart / 60) << std::endl;
-			sleepTimer.QuadPart = frameTime.QuadPart;
-			QueryPerformanceCounter(&startTime);
+		// if (FRAME_RATE_GOVERNING == 1)
+		// {
+		// 	int teste = 0;
+		// 	// std::cout << "@deb | start | " << frameTime.QuadPart << " | " <<  (frequency.QuadPart / 60) << std::endl;
+		// 	sleepTimer.QuadPart = frameTime.QuadPart;
+		// 	QueryPerformanceCounter(&startTime);
 
-			// SLEEP MODE - FIX TO 60 FPS (Frequency / 60)
-			while(sleepTimer.QuadPart < (frequency.QuadPart / 60))
-			{
-				QueryPerformanceCounter(&endTime);
-				sleepTimer.QuadPart += (endTime.QuadPart - startTime.QuadPart);
-				teste = 1;
-			}
+		// 	// SLEEP MODE - FIX TO 60 FPS (Frequency / 60)
+		// 	while(sleepTimer.QuadPart < (frequency.QuadPart / 60))
+		// 	{
+		// 		QueryPerformanceCounter(&endTime);
+		// 		sleepTimer.QuadPart += (endTime.QuadPart - startTime.QuadPart);
+		// 		teste = 1;
+		// 	}
 
-			if(teste)
-				timer.QuadPart += sleepTimer.QuadPart;
-			// std::cout << "@deb | end | " << sleepTimer.QuadPart << std::endl;
-			//system("PAUSE");
-		}
+		// 	if(teste)
+		// 		timer.QuadPart += sleepTimer.QuadPart;
+		// 	// std::cout << "@deb | end | " << sleepTimer.QuadPart << std::endl;
+		// 	//system("PAUSE");
+		// }
 	}
 
 	delete userEventHandler;
