@@ -127,38 +127,16 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	initGL();
 
-	// // -------------------------------------------------------------------------
-	// // MAIN LOOP
-	// // -------------------------------------------------------------------------
-	// Possibilidade de deixar livre ou fixar o tempo (em ms) de cada quado
-	// - variable frame rate
-	// - frame-rate governing
-	LARGE_INTEGER frameTime; // ticks
-	unsigned int numberOfFrames = 0;
+	LARGE_INTEGER frameTime;
 	LARGE_INTEGER startTime;
 	LARGE_INTEGER endTime;
-	LARGE_INTEGER frequency;
-	LARGE_INTEGER timer;
-	LARGE_INTEGER sleepTimer;
-	// -------------------------------------------------------------------------
-	//unsigned long long timer = 0;
 
-	// unsigned int currentTime;
-	// unsigned int lastTime = 0;
-	// unsigned int framePerSecond;
-	// unsigned int timeAccum = 0;
-	timer.QuadPart = 0;
-	sleepTimer.QuadPart = 0;
+	QueryPerformanceCounter(&endTime);
 
-	system("PAUSE");
-
-	// MAIN LOOP
 	while(!isDone)
 	{
-		// READ HIGH-RESOLUTION TIMER
 		QueryPerformanceCounter(&startTime);
 
-		// if(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
 		while(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
 		{
 			if(msg.message == WM_QUIT)
@@ -171,54 +149,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			DispatchMessage(&msg);
 		}
 
-		numberOfFrames++;
-		//apiWrapper->getEventHandler()->drawFrame();
+
+		// RENDERING STUFF HERE
+
+		// apiWrapper->getEventHandler()->drawFrame();
 		// drawGLWindow(apiWrapper->getHDC());
 
-		// READ HIGH-RESOLUTION TIMER
+		// RENDERING STUFF HERE
+
+		frameTime.QuadPart = startTime.QuadPart - endTime.QuadPart;
 		QueryPerformanceCounter(&endTime);
-		QueryPerformanceFrequency(&frequency);
-
-		frameTime.QuadPart = endTime.QuadPart - startTime.QuadPart;
-
-		// CALCULATE FRAME TIME
-		// Guard against loss-of-precision: convert to microseconds before dividing by ticks per second
-		// 1 seconds -> 1000 milliseconds -> microseconds = 1000000
-		timer.QuadPart += frameTime.QuadPart;
-
-		// ONE SECOND OUTPUT
-		if(timer.QuadPart > frequency.QuadPart)
-		{
-			std::cout << " > FRAME STATUS"
-				<< "\n\tFPS: " << numberOfFrames
-				<< "\n\tFRAME TIME: " << frameTime.QuadPart
-				<< "\n" << std::endl;
-
-			numberOfFrames = 0;
-			timer.QuadPart = 0;
-		}
-
-		// FRAME RATE GOVERNING
-		// if (FRAME_RATE_GOVERNING == 1)
-		// {
-		// 	int teste = 0;
-		// 	// std::cout << "@deb | start | " << frameTime.QuadPart << " | " <<  (frequency.QuadPart / 60) << std::endl;
-		// 	sleepTimer.QuadPart = frameTime.QuadPart;
-		// 	QueryPerformanceCounter(&startTime);
-
-		// 	// SLEEP MODE - FIX TO 60 FPS (Frequency / 60)
-		// 	while(sleepTimer.QuadPart < (frequency.QuadPart / 60))
-		// 	{
-		// 		QueryPerformanceCounter(&endTime);
-		// 		sleepTimer.QuadPart += (endTime.QuadPart - startTime.QuadPart);
-		// 		teste = 1;
-		// 	}
-
-		// 	if(teste)
-		// 		timer.QuadPart += sleepTimer.QuadPart;
-		// 	// std::cout << "@deb | end | " << sleepTimer.QuadPart << std::endl;
-		// 	//system("PAUSE");
-		// }
+		frameTime.QuadPart += endTime.QuadPart - startTime.QuadPart;
 	}
 
 	delete userEventHandler;
