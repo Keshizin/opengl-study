@@ -48,14 +48,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	std::cout << "> Welcome to OpenGL Application" << std::endl;
 
-	ret = createWindow(640, 480, 0, 0);
+	ret = createWindow(640, 480, 5, 5);
 	std::cout << "> window created: " << ret << std::endl;
 
 	ret = ShowWindow(hWindow, SW_SHOW);
 	std::cout << "> show window: " << ret << std::endl;
 
-	// ret = destroyWindow();
-	// std::cout << "> window destroyed: " << ret << std::endl;
+	ret = destroyWindow();
+	std::cout << "> (x) window created: " << ret << std::endl;
 
 	MSG msg;
 	bool isDone = false;
@@ -77,8 +77,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		{
 			if(msg.message == WM_QUIT)
 			{
-				// ret = destroyWindow();
-				// std::cout << "> window destroyed: " << ret << std::endl;
+				std::cout << "> WM_QUIT message" << std::endl;
 				isDone = true;
 			}
 
@@ -434,7 +433,7 @@ int destroyWindow()
 	if(ret == FALSE)
 	{
 		DWORD error = GetLastError();
-		std::cout << "(!) 1 - Nao foi possivel liberar o rendering context: " << error << "\n" << std::endl;
+		std::cout << "(!) Nao foi possivel liberar o rendering context: " << error << "\n" << std::endl;
 		error = 0;
 	}
 
@@ -481,28 +480,50 @@ int destroyWindow()
 	return error;
 }
 
+int releaseWindow()
+{
+	return 1;
+}
+
 
 LRESULT CALLBACK windowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	int ret;
+
 	switch(uMsg)
 	{
 		// --------------------------------------------------------------------
 		// WINDOW EVENTS
 		// --------------------------------------------------------------------
 		case WM_CREATE:
+			std::cout << "> WM_CREATE message" << std::endl;
 			break;
 
 		case WM_DESTROY:
+			std::cout << "> WM_DESTROY message" << std::endl;
 			PostQuitMessage(0);
 			break;
 
 		case WM_MOVE:
+			std::cout << "> WM_MOVE message | x: " << LOWORD(lParam) << " y: " << HIWORD(lParam) << std::endl;
 			break;
 
 		case WM_SIZE:
+			std::cout << "> WM_SIZE message | x: " << LOWORD(lParam) << " y: " << HIWORD(lParam) << std::endl;
+			resizeWindowEvent(LOWORD(lParam), HIWORD(lParam));
 			break;
 
 		case WM_CLOSE:
+			std::cout << "> WM_CLOSE message" << std::endl;
+			destroyWindow();
+			break;
+
+		case WM_ACTIVATE:
+			std::cout << "> WM_ACTIVATE message | wParam: " << LOWORD(wParam) <<std::endl;
+			break;
+
+		case WM_SHOWWINDOW:
+			std::cout << "> WM_SHOWWINDOW message | wParam: " << wParam << " lParam: " << lParam << std::endl;
 			break;
 
 		// --------------------------------------------------------------------
