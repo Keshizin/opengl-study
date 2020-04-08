@@ -9,7 +9,7 @@ INC_DIR=include
 RES_DIR=winres
 
 # Flags que devem ser passados para o compilador
-OUTPUT_NAME=myopengl.exe
+OUTPUT_NAME=app.exe
 CPPSOURCES=$(wildcard $(SRC_DIR)/*.cpp)
 OBJFILES=$(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(CPPSOURCES))	
 DFILES=$(patsubst $(SRC_DIR)/%.cpp,$(TMP_DIR)/%.d,$(CPPSOURCES))
@@ -67,7 +67,7 @@ clean-all:
 -include $(DFILES)
 
 $(TMP_DIR)/%.d: $(SRC_DIR)/%.cpp
-	@echo . Gerando arquivos .d (dependencias - GCC) $<
+# 	@echo . Gerando arquivos .d (dependencias - GCC) $<
 	@g++ -c $< -MM -MT 'obj/$*.o temp/$*.d ' -MD $(INC_FLAGS) -o $@
 
 var-teste:

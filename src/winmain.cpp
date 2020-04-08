@@ -1,131 +1,64 @@
 #include <windows.h>
-#include <iostream>
-#include <iomanip>
 #include <GL/gl.h>
-#include <GL/glu.h>
 
-#include <gewin.h>
-#include <gewinapiwrapper.h>
-#include <geevthandler.h>
+#include <iostream>
+// #include <iomanip>
+// #include <GL/glu.h>
 
+// #include <gewin.h>
+// #include <gewinapiwrapper.h>
 
-#define XMD_H	
-#define HAVE_BOOLEAN
+#include <eventhandler.h>
 
-#define WINDOW_WIDTH  600
-#define WINDOW_HEIGHT 600
-#define FRAME_RATE_GOVERNING 1
+// ----------------------------------------------------------------------------
+//  SYMBOLIC CONSTANTS
+// ----------------------------------------------------------------------------
+#define MOUSE_BUTTON_LEFT   1
+#define MOUSE_BUTTON_MIDDLE 2
+#define MOUSE_BUTTON_RIGHT  3
 
-extern "C" {
-	#include <jpeg/jpeglib.h>
-}
+// ----------------------------------------------------------------------------
+//  GLOBAL VARIABLES
+// ----------------------------------------------------------------------------
+HGLRC hRC = NULL;
+HWND hWindow = NULL;
+HDC hDC = NULL;
 
-#include <myres.h>
+// ----------------------------------------------------------------------------
+//  FUNCTION PROTOTYPE DECLARATION
+// ----------------------------------------------------------------------------
+LRESULT CALLBACK windowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-class UserEventHandler : public GEEventHandler
-{
-public:
-	void drawFrame()
-	{
-		//std::cout << "> Draw Frame Event\n" << std::endl;
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		// glColor3f(0.9f, 0.4f, 0.018f);
-		// glRasterPos2i(0, 0);
-		// glDrawPixels(globalImg->dimx, globalImg->dimy, GL_RGB, GL_UNSIGNED_BYTE, globalImg->data);
-		// Specific for rendering context type
-		SwapBuffers(hDC);
-	}
+int createWindow(int width, int height, int x, int y);
+int destroyWindow();
 
-	void mouseEvent(int button, int state, int x, int y)
-	{
-		std::cout << "> Mouse Event"
-			<< "\n\tbutton: " << button
-			<< "\n\t state: " << state
-			<< "\n\t     x: " << x
-			<< "\n\t     y: " << y
-			<< "\n" << std::endl;
-	}
+void frameEvent();
+void mouseEvent(int button, int state, int x, int y);
+void mouseMotionEvent(int x, int y);
+void keyboardEvent(unsigned char key, int state);
+void keyboardSpecialEvent(unsigned char key, int state);
+void resizeWindowEvent(int width, int height);
 
-	void mouseMotionEvent(int x, int y)
-	{
-		std::cout << "> Mouse Motion Event"
-			<< "\n\tx: " << x
-			<< "\n\ty: " << y
-			<< "\n" << std::endl;
-	}
-
-	void resizeWindow(int width, int height)
-	{
-		std::cout << "> Resize Window Event"
-			<< "\n\twidth: " << width
-			<< "\n\theight: " << height
-			<< "\n" << std::endl;
-
-		// user configurations
-		glViewport(0, 0, width, height);
-		glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();
-		gluOrtho2D(0, width, 0, height);
-		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
-	}
-
-	void setDC(HDC hDC)
-	{
-		this->hDC = hDC;
-	}
-
-private:
-	HDC hDC;
-};
-
-// Define a estrutura de uma imagem
-typedef struct
-{
-	char nome[50];			// nome do arquivo carregado
-	int ncomp;				// número de componentes na textura (1-intensidade, 3-RGB)
-	GLint dimx;				// largura 
-	GLint dimy;				// altura
-	GLuint texid;			// identifição da textura em OpenGL
-	unsigned char *data;	// apontador para a imagem em si
-} TEX;
-
-TEX *globalImg;
-
-void initGL();
-
-TEX *LoadJPG(const char *filename, bool inverte = true);
-void DecodeJPG(jpeg_decompress_struct* cinfo, TEX *pImageData, bool inverte);
-
+// ----------------------------------------------------------------------------
+//  MAIN FUNCTION
+// ----------------------------------------------------------------------------
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
-	std::cout << "> Starting application" << std::endl;
-	UserEventHandler *userEventHandler = new UserEventHandler();
+	int ret;
 
-	GEWinApiWrapper *winApiWrapper = new GEWinApiWrapper();
-	winApiWrapper->setEventHandler(userEventHandler);
-	winApiWrapper->setWindowClassName("MYWINDOWCLASS");
-	GEApiWrapper *apiWrapper = winApiWrapper;
+	std::cout << "> Welcome to OpenGL Application" << std::endl;
 
-	GEWindow myWindow(apiWrapper);
-	myWindow.setWindowName("BPM GAME ENGINE");
-	myWindow.setWidth(640);
-	myWindow.setHeight(480);
+	ret = createWindow(640, 480, 0, 0);
+	std::cout << "> window created: " << ret << std::endl;
 
-	if(myWindow.createWindow())
-		std::cout << "> Window created with success!" << std::endl;
-	else
-		std::cout << "(!) Fail to create window!" << std::endl;
+	ret = ShowWindow(hWindow, SW_SHOW);
+	std::cout << "> show window: " << ret << std::endl;
 
-	userEventHandler->setDC(winApiWrapper->getDC());
-	
-	myWindow.showWindow();
+	// ret = destroyWindow();
+	// std::cout << "> window destroyed: " << ret << std::endl;
 
 	MSG msg;
-	// int ret;
 	bool isDone = false;
-
-	initGL();
 
 	LARGE_INTEGER frameTime;
 	LARGE_INTEGER startTime;
@@ -135,140 +68,496 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	while(!isDone)
 	{
+		// --------------------------------------------------------------------
+		// START OF FRAME
+		// --------------------------------------------------------------------
 		QueryPerformanceCounter(&startTime);
 
 		while(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
 		{
 			if(msg.message == WM_QUIT)
 			{
-				myWindow.destroyWindow();
+				// ret = destroyWindow();
+				// std::cout << "> window destroyed: " << ret << std::endl;
 				isDone = true;
 			}
 
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
-
-
+		// --------------------------------------------------------------------
 		// RENDERING STUFF HERE
+		// --------------------------------------------------------------------
 
-		// apiWrapper->getEventHandler()->drawFrame();
-		// drawGLWindow(apiWrapper->getHDC());
-
-		// RENDERING STUFF HERE
-
+		// --------------------------------------------------------------------
+		// END OF FRAME
+		// --------------------------------------------------------------------
 		frameTime.QuadPart = startTime.QuadPart - endTime.QuadPart;
 		QueryPerformanceCounter(&endTime);
 		frameTime.QuadPart += endTime.QuadPart - startTime.QuadPart;
 	}
 
-	delete userEventHandler;
-	delete winApiWrapper;
-
-	std::cout << "> End of application!" << std::endl;
+	std::cout << "> End of OpenGL Application!" << std::endl;
 	return 0;
 }
 
-void initGL()
+// ----------------------------------------------------------------------------
+//  FUNCTION DEFINITION
+// ----------------------------------------------------------------------------
+void frameEvent()
 {
-	globalImg = LoadJPG("assets/logo.jpg");
-
-	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	glClearColor(0.133f, 0.161f, 0.173f, 1.0f);
-	//glClearColor(0.09f, 0.4f, 0.018f, 1.0f); // logo
-	glPixelStorei (GL_UNPACK_ALIGNMENT, 1);
 }
 
-TEX *LoadJPG(const char *filename, bool inverte)
+void mouseEvent(int button, int state, int x, int y)
 {
-	struct jpeg_decompress_struct cinfo;
-	TEX *pImageData = NULL;
-	FILE *pFile;
-
-	if((pFile = fopen(filename, "rb")) == NULL) 
-	{
-		// Exibe uma mensagem de erro avisando que o arquivo não foi encontrado
-		// e retorna NULL
-		printf("Impossível carregar arquivo JPG: %s\n",filename);
-		return NULL;
-	}
-
-	// Cria um gerenciado de erro
-	jpeg_error_mgr jerr;
-
-	// Objeto com informações de compactação para o endereço do gerenciador de erro
-	cinfo.err = jpeg_std_error(&jerr);
-
-	// Inicializa o objeto de decompactação
-	jpeg_create_decompress(&cinfo);
-
-	
-	// Especifica a origem dos dados (apontador para o arquivo)	
-	jpeg_stdio_src(&cinfo, pFile);
-	
-	// Aloca a estrutura que conterá os dados jpeg
-	pImageData = (TEX*)malloc(sizeof(TEX));
-
-	// Decodifica o arquivo JPG e preenche a estrutura de dados da imagem
-	DecodeJPG(&cinfo, pImageData, inverte);
-	
-	// Libera a memória alocada para leitura e decodificação do arquivo JPG
-	jpeg_destroy_decompress(&cinfo);
-	
-	// Fecha o arquivo 
-	fclose(pFile);
-
-	// Retorna os dados JPG (esta memória deve ser liberada depois de usada)
-	
-	return pImageData;
 }
 
-void DecodeJPG(jpeg_decompress_struct* cinfo, TEX *pImageData, bool inverte)
+void mouseMotionEvent(int x, int y)
 {
-	// Lê o cabeçalho de um arquivo jpeg
-	jpeg_read_header(cinfo, TRUE);
-	
-	// Começa a descompactar um arquivo jpeg com a informação 
-	// obtida do cabeçalho
-	jpeg_start_decompress(cinfo);
+}
 
-	// Pega as dimensões da imagem e varre as linhas para ler os dados do pixel
-	pImageData->ncomp = cinfo->num_components;
-	pImageData->dimx  = cinfo->image_width;
-	pImageData->dimy  = cinfo->image_height;
+void keyboardEvent(unsigned char key, int state)
+{
+}
 
-	int rowSpan = pImageData->ncomp * pImageData->dimx;
-	// Aloca memória para o buffer do pixel
-	pImageData->data = new unsigned char[rowSpan * pImageData->dimy];
-		
-	// Aqui se usa a variável de estado da biblioteca cinfo.output_scanline 
-	// como o contador de loop
-	
-	// Cria um array de apontadores para linhas
-	int height = pImageData->dimy - 1;
-	unsigned char** rowPtr = new unsigned char*[pImageData->dimy];
-	if(inverte)
-		for (int i = 0; i <= height; i++)
-			rowPtr[height - i] = &(pImageData->data[i*rowSpan]);
-	else
-		for (int i = 0; i <= height; i++)
-			rowPtr[i] = &(pImageData->data[i*rowSpan]);
+void keyboardSpecialEvent(unsigned char key, int state)
+{
+}
 
-	// Aqui se extrai todos os dados de todos os pixels
-	int rowsRead = 0;
-	while (cinfo->output_scanline < cinfo->output_height) 
+void resizeWindowEvent(int width, int height)
+{
+}
+
+int createWindow(int width, int height, int x, int y)
+{
+	int ret;
+
+	WNDCLASSEX windowClass;
+
+	windowClass.cbSize = sizeof(WNDCLASSEX);
+	windowClass.style = CS_DBLCLKS | CS_HREDRAW | CS_OWNDC | CS_VREDRAW;
+	windowClass.lpfnWndProc = windowProcedure; // mandatory
+	windowClass.cbClsExtra = 0;
+	windowClass.cbWndExtra = 0;
+	windowClass.hInstance = GetModuleHandle(NULL); // mandatory
+	windowClass.hIcon = 0;
+	windowClass.hCursor = LoadCursor(NULL, IDC_ARROW);
+	windowClass.hbrBackground = 0;
+	windowClass.lpszMenuName = 0;
+	windowClass.lpszClassName = LPCSTR("GLWNDCLASS"); // mandatory
+	windowClass.hIconSm = 0;
+
+	if(!RegisterClassEx(&windowClass))
 	{
-		// Lê a linha corrente de pixels e incrementa o contador de linhas lidas
-		rowsRead += jpeg_read_scanlines(cinfo, &rowPtr[rowsRead], cinfo->output_height - rowsRead);
+		DWORD error = GetLastError();
+		std::cout << "(!) 1 - Nao foi possivel registrar uma Window Class: " << error << "\n" << std::endl;
+		return 0;
 	}
-	
-	// Libera a memória
-	delete [] rowPtr;
 
-	// Termina a decompactação dos dados 
-	jpeg_finish_decompress(cinfo);
+	RECT windowSize;
+	windowSize.left = (LONG)0;
+	windowSize.right = (LONG)width;
+	windowSize.top = (LONG)0;
+	windowSize.bottom = (LONG)height;
+
+	// Janela default (janela com barra de título)
+	// DWORD dwExStyle = 0;
+	// DWORD dwStyle = 0;
+
+	// Janela sem bordas (sem barra de títulos)
+	// DWORD dwExStyle = WS_EX_APPWINDOW;
+	// DWORD dwStyle = WS_POPUP;
+
+	// Janela sem bordas (somente com a barra de títulos)
+	// DWORD dwExStyle = WS_EX_APPWINDOW;
+	// DWORD dwStyle = WS_POPUP | WS_CAPTION;
+
+	// Janela com várias opções do sistema
+	// DWORD dwExStyle = WS_EX_APPWINDOW;
+	// DWORD dwStyle = WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SYSMENU;
+	// DWORD dwStyle = WS_MINIMIZEBOX | WS_SYSMENU;
+	// DWORD dwStyle = WS_SYSMENU;
+
+	// Janela redimensionável (somente com a barra de títulos)
+	// DWORD dwExStyle = WS_EX_APPWINDOW;
+	// DWORD dwStyle = WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME;
+
+	// Janela não redimensionável (somente com a barra de títulos)
+	// DWORD dwExStyle = WS_EX_APPWINDOW;
+	// DWORD dwStyle = WS_POPUP | WS_CAPTION | WS_SYSMENU;
+
+	// Janela com todas as opções
+	DWORD dwExStyle = WS_EX_APPWINDOW;
+	DWORD dwStyle = WS_OVERLAPPEDWINDOW;
+
+	AdjustWindowRectEx(&windowSize, dwStyle, FALSE, dwExStyle);
+
+	hWindow = CreateWindowEx(
+		dwExStyle,
+		LPCSTR("GLWNDCLASS"),
+		LPCSTR("OPENGL APP"),
+		dwStyle,
+		x,
+		y,
+		windowSize.right - windowSize.left,
+		windowSize.bottom - windowSize.top,
+		NULL,
+		NULL,
+		GetModuleHandle(NULL),
+		NULL);
+
+	if(hWindow == NULL)
+	{
+		DWORD error = GetLastError();
+		std::cout << "(!) 2 - Nao foi possivel criar a janela: " << error << "\n" << std::endl;
+
+		ret = UnregisterClass(LPCSTR("GLWNDCLASS"), GetModuleHandle(NULL));
+
+		if(ret == 0)
+		{
+			DWORD error = GetLastError();
+			std::cout << "(!) 3 -  Nao foi possivel desregistrar a janela: " << error << "\n" << std::endl;
+		}
+
+		return 0;
+	}
+
+	static PIXELFORMATDESCRIPTOR pfd =
+	{
+		sizeof(PIXELFORMATDESCRIPTOR), // nSize
+		1, // nVersion
+		PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER, // dwFlags
+		PFD_TYPE_RGBA, // iPixelType
+		32, // cColorBits
+		0, // cRedBits
+		0, // cRedShift
+		0, // cGreenBits
+		0, // cGreenShift
+		0, // cBlueBits
+		0, // cBlueShift
+		0, // cAlphaBits
+		0, // cAlphaShift
+		0, // cAccumBits
+		0, // cAccumRedBits
+		0, // cAccumGreenBits
+		0, // cAccumBlueBits
+		0, // cAccumAlphaBits
+		32, // cDepthBits
+		0, // cStencilBits
+		0, // cAuxBuffers
+		PFD_MAIN_PLANE, // iLayerType
+		0, // bReserved
+		0, // dwLayerMask
+		0, // dwVisibleMask
+		0 // dwDamageMask
+	};
+
+	hDC = GetDC(hWindow);
+
+	if(hDC == NULL)
+	{
+		DWORD error = GetLastError();
+		std::cout << "(!) 4 - Nao foi possivel obter device context: " << error << "\n" << std::endl;
+		return 0;
+	}
+
+	GLuint PixelFormat = ChoosePixelFormat(hDC, &pfd);
+
+	if(!PixelFormat)
+	{
+		DWORD error = GetLastError();
+		std::cout << "(!) 5 - Nao foi possivel obter pixel format: " << error << "\n" << std::endl;
+
+		// Como criamos uma janela com CS_OWNDC (DC específico para a janela), não
+		// podemos liberá-lo utilizando ReleaseDC. A questão é quando o DC é
+		// liberado pelo Windows.
+
+		ret = ReleaseDC(hWindow, hDC);
+
+		if(!ret)
+		{
+			DWORD error = GetLastError();
+			std::cout << "(!) 6 - Nao foi possivel liberar o device context: " << error << "\n" << std::endl;
+		}
+
+		ret = DestroyWindow(hWindow);
+
+		if(ret == 0)
+		{
+			DWORD error = GetLastError();
+			std::cout << "(!) 7 - Nao foi possivel destruir a janela: " << error << "\n" << std::endl;
+		}
+
+		ret = UnregisterClass(LPCSTR("GLWNDCLASS"), GetModuleHandle(NULL));
+
+		if(ret == 0)
+		{
+			DWORD error = GetLastError();
+			std::cout << "(!) 8 - Nao foi possivel desregistrar a janela: " << error << "\n" << std::endl;
+		}
+
+		return 0;
+	}
+
+	ret = SetPixelFormat(hDC, PixelFormat, &pfd);
+
+	if(ret == FALSE)
+	{
+		DWORD error = GetLastError();
+		std::cout << "(!) 9 - Nao foi possivel configurar o pixel format: " << error << "\n" << std::endl;
+
+		// Como criamos uma janela com CS_OWNDC (DC específico para a janela), não
+		// podemos liberá-lo utilizando ReleaseDC. A questão é quando o DC é
+		// liberado pelo Windows.
+
+		ret = ReleaseDC(hWindow, hDC);
+
+		if(!ret)
+		{
+			DWORD error = GetLastError();
+			std::cout << "(!) 10 - Nao foi possivel liberar o device context: " << error << "\n" << std::endl;
+		}
+
+		ret = DestroyWindow(hWindow);
+
+		if(ret == 0)
+		{
+			DWORD error = GetLastError();
+			std::cout << "(!) 11 - Nao foi possivel destruir a janela: " << error << "\n" << std::endl;
+		}
+
+		ret = UnregisterClass(LPCSTR("GLWNDCLASS"), GetModuleHandle(NULL));
+
+		if(ret == 0)
+		{
+			DWORD error = GetLastError();
+			std::cout << "(!) 12 - Nao foi possivel desregistrar a janela: " << error << "\n" << std::endl;
+		}
+
+		return 0;
+	}
+
+	hRC = wglCreateContext(hDC);
+
+	if(hRC == NULL)
+	{
+		DWORD error = GetLastError();
+		std::cout << "(!) 13 - Nao foi possivel criar rendering context: " << error << "\n" << std::endl;
+
+		// Como criamos uma janela com CS_OWNDC (DC específico para a janela), não
+		// podemos liberá-lo utilizando ReleaseDC. A questão é quando o DC é
+		// liberado pelo Windows.
+
+		ret = ReleaseDC(hWindow, hDC);
+
+		if(!ret)
+		{
+			DWORD error = GetLastError();
+			std::cout << "(!) 14 - Nao foi possivel liberar o device context: " << error << "\n" << std::endl;
+		}
+
+		ret = DestroyWindow(hWindow);
+
+		if(ret == 0)
+		{
+			DWORD error = GetLastError();
+			std::cout << "(!) 15 - Nao foi possivel destruir a janela: " << error << "\n" << std::endl;
+		}
+
+		ret = UnregisterClass(LPCSTR("GLWNDCLASS"), GetModuleHandle(NULL));
+
+		if(ret == 0)
+		{
+			DWORD error = GetLastError();
+			std::cout << "(!) 16 - Nao foi possivel desregistrar a janela: " << error << "\n" << std::endl;
+		}
+
+		return 0;
+	}
+
+	ret = wglMakeCurrent(hDC, hRC);
+
+	if(ret == FALSE)
+	{
+		DWORD error = GetLastError();
+		std::cout << "(!) 17 - Nao foi possivel configurar o rendering context: " << error << "\n" << std::endl;
+
+		ret = wglDeleteContext(hRC);
+
+		if(ret == FALSE)
+		{
+			DWORD error = GetLastError();
+			std::cout << "(!) 18 - Nao foi possivel deletar o rendering context: " << error << "\n" << std::endl;
+		}
+
+		// Como criamos uma janela com CS_OWNDC (DC específico para a janela), não
+		// podemos liberá-lo utilizando ReleaseDC. A questão é quando o DC é
+		// liberado pelo Windows.
+
+		ret = ReleaseDC(hWindow, hDC);
+
+		if(!ret)
+		{
+			DWORD error = GetLastError();
+			std::cout << "(!) 19 - Nao foi possivel liberar o device context: " << error << "\n" << std::endl;
+		}
+
+		ret = DestroyWindow(hWindow);
+
+		if(ret == 0)
+		{
+			DWORD error = GetLastError();
+			std::cout << "(!) 20 - Nao foi possivel destruir a janela: " << error << "\n" << std::endl;
+		}
+
+		ret = UnregisterClass(LPCSTR("GLWNDCLASS"), GetModuleHandle(NULL));
+
+		if(ret == 0)
+		{
+			DWORD error = GetLastError();
+			std::cout << "(!) 21 - Nao foi possivel desregistrar a janela: " << error << "\n" << std::endl;
+		}
+
+		return 0;
+	}
+
+	return 1;
+}
+
+int destroyWindow()
+{
+	int ret;
+	int error = 1;
+
+	ret = wglMakeCurrent(NULL, NULL);
+
+	if(ret == FALSE)
+	{
+		DWORD error = GetLastError();
+		std::cout << "(!) 1 - Nao foi possivel liberar o rendering context: " << error << "\n" << std::endl;
+		error = 0;
+	}
+
+	ret = wglDeleteContext(hRC);
+
+	if(ret == FALSE)
+	{
+		DWORD error = GetLastError();
+		std::cout << "(!) Nao foi possivel deletar o rendering context: " << error << "\n" << std::endl;
+		error = 0;
+	}
+
+	// Como criamos uma janela com CS_OWNDC (DC específico para a janela), não
+	// podemos liberá-lo utilizando ReleaseDC. A questão é quando o DC é
+	// liberado pelo Windows.
+
+	ret = ReleaseDC(hWindow, hDC);
+
+	if(!ret)
+	{
+		DWORD error = GetLastError();
+		std::cout << "(!) Nao foi possivel liberar o device context: " << error << "\n" << std::endl;
+		error = 0;
+	}
+
+	ret = DestroyWindow(hWindow);
+
+	if(ret == 0)
+	{
+		DWORD error = GetLastError();
+		std::cout << "(!) Nao foi possivel destruir a janela: " << error << "\n" << std::endl;
+		error = 0;
+	}
+
+	ret = UnregisterClass(LPCSTR("GLWNDCLASS"), GetModuleHandle(NULL));
+
+	if(ret == 0)
+	{
+		DWORD error = GetLastError();
+		std::cout << "(!) Nao foi possivel desregistrar a janela: " << error << "\n" << std::endl;
+		error = 0;
+	}
+
+	return error;
+}
+
+
+LRESULT CALLBACK windowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	switch(uMsg)
+	{
+		// --------------------------------------------------------------------
+		// WINDOW EVENTS
+		// --------------------------------------------------------------------
+		case WM_CREATE:
+			break;
+
+		case WM_DESTROY:
+			PostQuitMessage(0);
+			break;
+
+		case WM_MOVE:
+			break;
+
+		case WM_SIZE:
+			break;
+
+		case WM_CLOSE:
+			break;
+
+		// --------------------------------------------------------------------
+		// MOUSE EVENTS
+		// --------------------------------------------------------------------
+		case WM_LBUTTONDOWN:
+			mouseEvent(MOUSE_BUTTON_LEFT, 1, LOWORD(lParam), HIWORD(lParam));
+			break;
+
+		case WM_LBUTTONUP:
+			mouseEvent(MOUSE_BUTTON_LEFT, 0, LOWORD(lParam), HIWORD(lParam));
+			break;
+
+		case WM_MBUTTONDOWN:
+			mouseEvent(MOUSE_BUTTON_MIDDLE, 1, LOWORD(lParam), HIWORD(lParam));
+			break;
+
+		case WM_MBUTTONUP:
+			mouseEvent(MOUSE_BUTTON_MIDDLE, 0, LOWORD(lParam), HIWORD(lParam));
+			break;
+
+		case WM_RBUTTONDOWN:
+			mouseEvent(MOUSE_BUTTON_RIGHT, 1, LOWORD(lParam), HIWORD(lParam));
+			break;
+
+		case WM_RBUTTONUP:
+			mouseEvent(MOUSE_BUTTON_RIGHT, 0, LOWORD(lParam), HIWORD(lParam));
+			break;
+
+		case WM_MOUSEMOVE:
+			mouseMotionEvent(LOWORD(lParam), HIWORD(lParam));
+			break;
+
+		// --------------------------------------------------------------------
+		// KEYBOARDS EVENTS
+		// --------------------------------------------------------------------
+		case WM_SYSKEYDOWN:
+			keyboardSpecialEvent(wParam, 1);
+			break;
+
+		case WM_KEYDOWN:
+			keyboardEvent(wParam, 1);
+			break;
+
+		case WM_SYSKEYUP:
+			keyboardSpecialEvent(wParam, 0);
+			break;
+
+		case WM_KEYUP:
+			keyboardEvent(wParam, 0);
+			break;
+
+		default:
+			break;
+	}
+
+	return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
