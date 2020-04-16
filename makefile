@@ -7,7 +7,7 @@ TMP_DIR=tmp
 LIB_DIR=lib
 INC_DIR=include
 RES_DIR=winres
-
+J_DIR=C:/Program\ Files\ (x86)/Java/jdk1.8.0_241
 # Flags que devem ser passados para o compilador
 OUTPUT_NAME=app.exe
 CPPSOURCES=$(wildcard $(SRC_DIR)/*.cpp)
@@ -15,6 +15,10 @@ OBJFILES=$(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(CPPSOURCES))
 DFILES=$(patsubst $(SRC_DIR)/%.cpp,$(TMP_DIR)/%.d,$(CPPSOURCES))
 RESSRCFILES= $(wildcard $(RES_DIR)/*.rc)
 OBJRESFILES=$(patsubst $(RES_DIR)/%.rc,$(OBJ_DIR)/%.o,$(RESSRCFILES))
+
+J_INC_FLAGS=-I$(J_DIR)/include/ -I$(J_DIR)/include/win32
+J_DIRLIB_FLAGS=-L$(J_DIR)/lib
+J_LIB_FLAGS=-ljvm
 
 INC_FLAGS=-I$(INC_DIR)
 LIB_FLAGS=-lgdi32 -lopengl32 -lglu32 -ljpeg
@@ -25,12 +29,12 @@ all: $(BIN_DIR)/$(OUTPUT_NAME)
 # Linkedição (.exe)
 $(BIN_DIR)/$(OUTPUT_NAME): $(OBJFILES)
 	@echo . Gerando executavel final: $@
-	@g++ $^ -o $@ $(OBJRESFILES) $(DIRLIB_FLAG) $(LIB_FLAGS) -Wall
+	@g++ $^ -o $@ $(J_DIRLIB_FLAGS) $(J_LIB_FLAGS) $(OBJRESFILES) $(DIRLIB_FLAG) $(LIB_FLAGS) -Wall
 
 # Compilação (.o)
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	@echo . Compilando $<
-	@g++ -c $< $(INC_FLAGS) -o $@
+	@g++ -c $< $(INC_FLAGS) $(J_INC_FLAGS) -o $@
 
 clean-exe:
 	@echo . Deletando o executavel
@@ -68,7 +72,7 @@ clean-all:
 
 $(TMP_DIR)/%.d: $(SRC_DIR)/%.cpp
 # 	@echo . Gerando arquivos .d (dependencias - GCC) $<
-	@g++ -c $< -MM -MT 'obj/$*.o temp/$*.d ' -MD $(INC_FLAGS) -o $@
+	@g++ -c $< -MM -MT 'obj/$*.o temp/$*.d ' -MD $(INC_FLAGS) $(J_INC_FLAGS) -o $@
 
 var-teste:
 	@echo $(OBJ_DIR)
@@ -84,6 +88,7 @@ var-teste:
 	@echo $(DFILES)
 	@echo $(RESSRCFILES)
 	@echo $(OBJRESFILES)
+	@echo $(INC_FLAGS)
 
 # Compilação de recursos do Windows
 windows-res: $(OBJRESFILES)
