@@ -16,9 +16,9 @@ DFILES=$(patsubst $(SRC_DIR)/%.cpp,$(TMP_DIR)/%.d,$(CPPSOURCES))
 RESSRCFILES= $(wildcard $(RES_DIR)/*.rc)
 OBJRESFILES=$(patsubst $(RES_DIR)/%.rc,$(OBJ_DIR)/%.o,$(RESSRCFILES))
 
-J_INC_FLAGS=-I$(J_DIR)/include/ -I$(J_DIR)/include/win32
-J_DIRLIB_FLAGS=-L$(J_DIR)/lib
-J_LIB_FLAGS=-ljvm
+# J_INC_FLAGS=-I$(J_DIR)/include/ -I$(J_DIR)/include/win32
+# J_DIRLIB_FLAGS=-L$(J_DIR)/lib
+# J_LIB_FLAGS=-ljvm
 
 INC_FLAGS=-I$(INC_DIR)
 LIB_FLAGS=-lgdi32 -lopengl32 -lglu32 -ljpeg

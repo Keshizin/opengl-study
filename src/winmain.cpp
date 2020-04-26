@@ -1,5 +1,6 @@
 #include <windows.h>
 #include <GL/gl.h>
+#include <GL/glu.h>
 
 #include <iostream>
 #include <string>
@@ -8,7 +9,7 @@
 
 #include <eventhandler.h>
 
-#include <jni.h>
+// #include <jni.h>
 
 // ----------------------------------------------------------------------------
 //  SYMBOLIC CONSTANTS
@@ -44,53 +45,53 @@ void resizeWindowEvent(int width, int height);
 // ----------------------------------------------------------------------------
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
-	char path[200]="-Djava.class.path=src;lib\\camunda-bpmn-model-7.13.0-alpha3.jar;lib\\camunda-xml-model-7.13.0-alpha3.jar;";
+	// char path[200]="-Djava.class.path=src;lib\\camunda-bpmn-model-7.13.0-alpha3.jar;lib\\camunda-xml-model-7.13.0-alpha3.jar;";
 
-	JavaVM *jvm;
-	JNIEnv *env;
-	JavaVMInitArgs vm_args;
+	// JavaVM *jvm;
+	// JNIEnv *env;
+	// JavaVMInitArgs vm_args;
 
-	JavaVMOption jvmopt[1];
-	jvmopt[0].optionString = path;
+	// JavaVMOption jvmopt[1];
+	// jvmopt[0].optionString = path;
 
-	vm_args.version = JNI_VERSION_1_2;
-	vm_args.nOptions = 1;
-	vm_args.options = jvmopt;
-	vm_args.ignoreUnrecognized = JNI_TRUE;
+	// vm_args.version = JNI_VERSION_1_2;
+	// vm_args.nOptions = 1;
+	// vm_args.options = jvmopt;
+	// vm_args.ignoreUnrecognized = JNI_TRUE;
 
-	jint rc = JNI_CreateJavaVM(&jvm, (void**)&env, &vm_args);
+	// jint rc = JNI_CreateJavaVM(&jvm, (void**)&env, &vm_args);
  
-	if (rc != JNI_OK)
-	{
-		std::cout << "(!) ERROR It was not possible to create JVM." << std::endl;
-		return 0;
-	}
+	// if (rc != JNI_OK)
+	// {
+	// 	std::cout << "(!) ERROR It was not possible to create JVM." << std::endl;
+	// 	return 0;
+	// }
 
-	jclass jcls = env->FindClass("BPMNParser");
+	// jclass jcls = env->FindClass("BPMNParser");
 
-	if(jcls == NULL)
-	{
-		std::cout << "(!) Java class not found." << std::endl;
-		env->ExceptionDescribe();
-		jvm->DestroyJavaVM();
-		return 0;
-	}
+	// if(jcls == NULL)
+	// {
+	// 	std::cout << "(!) Java class not found." << std::endl;
+	// 	env->ExceptionDescribe();
+	// 	jvm->DestroyJavaVM();
+	// 	return 0;
+	// }
 
-    jmethodID methodId = env->GetStaticMethodID(jcls, "startBPMNParser", "()V");
+ //    jmethodID methodId = env->GetStaticMethodID(jcls, "startBPMNParser", "()V");
 
-	if(methodId == NULL)
-		std::cout << "(!) ERROR Method is not found!" << std::endl;
-	else
-	{
-		env->CallStaticVoidMethod(jcls, methodId);
+	// if(methodId == NULL)
+	// 	std::cout << "(!) ERROR Method is not found!" << std::endl;
+	// else
+	// {
+	// 	env->CallStaticVoidMethod(jcls, methodId);
 
-		if (env->ExceptionCheck()) {
-			env->ExceptionDescribe();
-			env->ExceptionClear();
-		}
-	}
+	// 	if (env->ExceptionCheck()) {
+	// 		env->ExceptionDescribe();
+	// 		env->ExceptionClear();
+	// 	}
+	// }
 
-	jvm->DestroyJavaVM();
+	// jvm->DestroyJavaVM();
 
 	int ret;
 
@@ -102,7 +103,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	ret = ShowWindow(hWindow, SW_SHOW);
 	std::cout << "> show window: " << ret << std::endl;
 
-
+	glMatrixMode(GL_PROJECTION);
+	gluOrtho2D(-1.0, 1.0, -1.0, 1.0);
+	glMatrixMode(GL_MODELVIEW);
 
 	MSG msg;
 	bool isDone = false;
@@ -134,7 +137,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		// --------------------------------------------------------------------
 		// RENDERING STUFF HERE
 		// --------------------------------------------------------------------
-
+		frameEvent();
+		SwapBuffers(hDC);
 		// --------------------------------------------------------------------
 		// END OF FRAME
 		// --------------------------------------------------------------------
@@ -152,6 +156,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 // ----------------------------------------------------------------------------
 void frameEvent()
 {
+	glClearColor(1, 1, 1, 0);
+	glClear(GL_COLOR_BUFFER_BIT);
+	glColor3f(1, 0, 0);
+
+	glBegin(GL_TRIANGLES);
+	glVertex2f(-0.5, -0.5);
+	glVertex2f( 0.0,  0.5);
+	glVertex2f( 0.5, -0.5);
+	glEnd();
+
+	// glFlush();
 }
 
 void mouseEvent(int button, int state, int x, int y)
@@ -261,7 +276,8 @@ int createWindow(int width, int height, int x, int y)
 		0, // cAccumGreenBits
 		0, // cAccumBlueBits
 		0, // cAccumAlphaBits
-		32, // cDepthBits
+		// 32, // cDepthBits
+		0, // cDepthBits
 		0, // cStencilBits
 		0, // cAuxBuffers
 		PFD_MAIN_PLANE, // iLayerType
