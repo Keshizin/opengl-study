@@ -156,14 +156,56 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 // ----------------------------------------------------------------------------
 void frameEvent()
 {
+	GLint width;
+
 	glClearColor(1, 1, 1, 0);
 	glClear(GL_COLOR_BUFFER_BIT);
-	glColor3f(1, 0, 0);
+	glColor3f(1.0f, 0.0f, 0.0f);	
 
-	glBegin(GL_TRIANGLES);
-	glVertex2f(-0.5, -0.5);
-	glVertex2f( 0.0,  0.5);
-	glVertex2f( 0.5, -0.5);
+	// Empilha atributo (espessura da linha - default é 1)
+	glPushAttrib(GL_LINE_BIT);
+	// Empilha atributo (cor)
+	glPushAttrib(GL_CURRENT_BIT); 
+
+	// Especifica a cor azul
+	glColor3f(0.0f, 0.0f, 1.0f); 
+	// Especifica a espessura da linha
+	glLineWidth(5);
+    
+	// Desenha linhas de espessura 5 e cor azul
+	// na parte inferior da janela
+	glBegin(GL_LINES);
+		glVertex2f(-40.0f,-40.0f);
+		glVertex2f( 40.0f,-40.0f); 
+		glVertex2f(-40.0f,-30.0f);
+		glVertex2f( 40.0f,-30.0f);
+	glEnd();    
+    
+	// A variável width irá receber o valor 5
+	glGetIntegerv(GL_LINE_WIDTH,&width); 
+    
+	// Desempilha atributo (cor)
+	glPopAttrib(); 
+    
+	// Desenha linhas de espessura 5 e cor vermelha
+	// no meio da janela
+	glBegin(GL_LINES);
+		glVertex2f(-40.0f,-5.0f);
+		glVertex2f( 40.0f,-5.0f); 
+		glVertex2f(-40.0f, 5.0f);
+		glVertex2f( 40.0f, 5.0f);
+	glEnd();     
+    
+	// Desempilha atributo (espessura da linha)
+	glPopAttrib();
+    
+	// Desenha linhas de espessura 1 (default) e cor vermelha
+	// na parte superior da janela    
+	glBegin(GL_LINES);
+		glVertex2f(-40.0f,30.0f);
+		glVertex2f( 40.0f,30.0f); 
+		glVertex2f(-40.0f,40.0f);
+		glVertex2f( 40.0f,40.0f);
 	glEnd();
 
 	// glFlush();
@@ -187,6 +229,18 @@ void keyboardSpecialEvent(unsigned char key, int state)
 
 void resizeWindowEvent(int width, int height)
 {
+	glViewport(0, 0, width, height);
+
+	// Inicializa o sistema de coordenadas
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+
+	// Estabelece a janela de seleção (esquerda, direita, inferior, 
+	// superior) mantendo a proporção com a janela de visualização
+	if (width <= height) 
+		gluOrtho2D (-50.0f, 50.0f, -50.0f*height/width, 50.0f*height/width);
+	else 
+		gluOrtho2D (-50.0f*width/height, 50.0f*width/height, -50.0f, 50.0f);
 }
 
 int createWindow(int width, int height, int x, int y)
