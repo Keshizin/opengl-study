@@ -97,15 +97,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	std::cout << "> Welcome to OpenGL Application" << std::endl;
 
-	ret = createWindow(640, 480, 5, 5);
+	ret = createWindow(450, 450, 5, 5);
 	std::cout << "> window created: " << ret << std::endl;
 
 	ret = ShowWindow(hWindow, SW_SHOW);
 	std::cout << "> show window: " << ret << std::endl;
-
-	glMatrixMode(GL_PROJECTION);
-	gluOrtho2D(-1.0, 1.0, -1.0, 1.0);
-	glMatrixMode(GL_MODELVIEW);
 
 	MSG msg;
 	bool isDone = false;
@@ -158,15 +154,51 @@ void frameEvent()
 {
 	glClearColor(1, 1, 1, 0);
 	glClear(GL_COLOR_BUFFER_BIT);
-	glColor3f(1, 0, 0);
 
-	glBegin(GL_TRIANGLES);
-	glVertex2f(-0.5, -0.5);
-	glVertex2f( 0.0,  0.5);
-	glVertex2f( 0.5, -0.5);
+// Altera a cor do desenho para azul
+	glColor3f(0.0f, 0.0f, 1.0f);     
+	// Desenha a casa
+	glBegin(GL_QUADS);
+		glVertex2f(-15.0f,-15.0f);
+		glVertex2f(-15.0f,  5.0f);       
+		glVertex2f( 15.0f,  5.0f);       
+		glVertex2f( 15.0f,-15.0f);
 	glEnd();
 
-	// glFlush();
+	// Altera a cor do desenho para branco
+	glColor3f(1.0f, 1.0f, 1.0f);  
+	// Desenha a porta e a janela  
+	glBegin(GL_QUADS);
+		glVertex2f(-4.0f,-14.5f);
+		glVertex2f(-4.0f,  0.0f);       
+		glVertex2f( 4.0f,  0.0f);       
+		glVertex2f( 4.0f,-14.5f);       
+		glVertex2f( 7.0f,-5.0f);
+		glVertex2f( 7.0f,-1.0f);       
+		glVertex2f(13.0f,-1.0f);       
+		glVertex2f(13.0f,-5.0f);             
+	glEnd();
+
+	// Altera a cor do desenho para azul
+	glColor3f(0.0f, 0.0f, 1.0f);     
+	// Desenha as "linhas" da janela  
+	glBegin(GL_LINES);      
+		glVertex2f( 7.0f,-3.0f);      
+		glVertex2f(13.0f,-3.0f);       
+		glVertex2f(10.0f,-1.0f);    
+		glVertex2f(10.0f,-5.0f);             
+	glEnd();    
+
+	// Altera a cor do desenho para vermelho
+	glColor3f(1.0f, 0.0f, 0.0f); 
+	// Desenha o telhado
+	glBegin(GL_TRIANGLES);
+		glVertex2f(-15.0f, 5.0f);   
+		glVertex2f(  0.0f,17.0f);    
+		glVertex2f( 15.0f, 5.0f);       
+	glEnd();
+
+	glFlush();
 }
 
 void mouseEvent(int button, int state, int x, int y)
@@ -187,6 +219,14 @@ void keyboardSpecialEvent(unsigned char key, int state)
 
 void resizeWindowEvent(int width, int height)
 {
+	glViewport(0, 0, width, height);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+
+	if(width <= height)
+		gluOrtho2D(-40.0f, 40.0f, -40.0f * height / width, 40.0f * height / width);
+	else
+		gluOrtho2D(-40.0f * width / height, 40.0f * width / height, -40.0f, 40.0f);
 }
 
 int createWindow(int width, int height, int x, int y)
@@ -535,7 +575,6 @@ LRESULT CALLBACK windowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 			break;
 
 		case WM_MOVE:
-			std::cout << "> WM_MOVE message | x: " << LOWORD(lParam) << " y: " << HIWORD(lParam) << std::endl;
 			break;
 
 		case WM_SIZE:
