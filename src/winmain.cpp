@@ -147,6 +147,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	return 0;
 }
 
+GLfloat fAspect;
+
 // ----------------------------------------------------------------------------
 //  FUNCTION DEFINITION
 // ----------------------------------------------------------------------------
@@ -156,46 +158,13 @@ void frameEvent()
 	glClear(GL_COLOR_BUFFER_BIT);
 
 // Altera a cor do desenho para azul
-	glColor3f(0.0f, 0.0f, 1.0f);     
+	glColor3f(1.0f, 0.0f, 1.0f);     
 	// Desenha a casa
 	glBegin(GL_QUADS);
-		glVertex2f(-15.0f,-15.0f);
-		glVertex2f(-15.0f,  5.0f);       
-		glVertex2f( 15.0f,  5.0f);       
-		glVertex2f( 15.0f,-15.0f);
-	glEnd();
-
-	// Altera a cor do desenho para branco
-	glColor3f(1.0f, 1.0f, 1.0f);  
-	// Desenha a porta e a janela  
-	glBegin(GL_QUADS);
-		glVertex2f(-4.0f,-14.5f);
-		glVertex2f(-4.0f,  0.0f);       
-		glVertex2f( 4.0f,  0.0f);       
-		glVertex2f( 4.0f,-14.5f);       
-		glVertex2f( 7.0f,-5.0f);
-		glVertex2f( 7.0f,-1.0f);       
-		glVertex2f(13.0f,-1.0f);       
-		glVertex2f(13.0f,-5.0f);             
-	glEnd();
-
-	// Altera a cor do desenho para azul
-	glColor3f(0.0f, 0.0f, 1.0f);     
-	// Desenha as "linhas" da janela  
-	glBegin(GL_LINES);      
-		glVertex2f( 7.0f,-3.0f);      
-		glVertex2f(13.0f,-3.0f);       
-		glVertex2f(10.0f,-1.0f);    
-		glVertex2f(10.0f,-5.0f);             
-	glEnd();    
-
-	// Altera a cor do desenho para vermelho
-	glColor3f(1.0f, 0.0f, 0.0f); 
-	// Desenha o telhado
-	glBegin(GL_TRIANGLES);
-		glVertex2f(-15.0f, 5.0f);   
-		glVertex2f(  0.0f,17.0f);    
-		glVertex2f( 15.0f, 5.0f);       
+		glVertex3f(-15.0f,-15.0f, 0.0f);
+		glVertex3f(-15.0f,  5.0f, 0.0f);       
+		glVertex3f( 15.0f,  5.0f, 0.0f);       
+		glVertex3f( 15.0f,-15.0f, 0.0f);
 	glEnd();
 
 	glFlush();
@@ -219,14 +188,26 @@ void keyboardSpecialEvent(unsigned char key, int state)
 
 void resizeWindowEvent(int width, int height)
 {
+	fAspect = (GLfloat)width/(GLfloat)height;
+
 	glViewport(0, 0, width, height);
+
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
+	gluPerspective(60,fAspect,0.5,500);
+	//glOrtho(-65.0, 65.0, -65.0, 65.0, -400.0, 400.0);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	gluLookAt(0,100,100, 0,0,0, 0,1,0);
 
-	if(width <= height)
-		gluOrtho2D(-40.0f, 40.0f, -40.0f * height / width, 40.0f * height / width);
-	else
-		gluOrtho2D(-40.0f * width / height, 40.0f * width / height, -40.0f, 40.0f);
+	// VISUALIZAÇÃO 2D
+	// glMatrixMode(GL_PROJECTION);
+	// glLoadIdentity();
+
+	// if(width <= height)
+	// 	gluOrtho2D(-40.0f, 40.0f, -40.0f * height / width, 40.0f * height / width);
+	// else
+	// 	gluOrtho2D(-40.0f * width / height, 40.0f * width / height, -40.0f, 40.0f);
 }
 
 int createWindow(int width, int height, int x, int y)
