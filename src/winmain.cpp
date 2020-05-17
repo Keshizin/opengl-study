@@ -1,6 +1,7 @@
 #include <windows.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
+#include <math.h>
 
 #include <iostream>
 #include <string>
@@ -143,6 +144,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		frameTime.QuadPart += endTime.QuadPart - startTime.QuadPart;
 	}
 
+	float ang;
+
 	std::cout << "> End of OpenGL Application!" << std::endl;
 	return 0;
 }
@@ -154,17 +157,26 @@ GLfloat fAspect;
 // ----------------------------------------------------------------------------
 void frameEvent()
 {
+	float ang;
+	//float M_PI = 3.141592;
+
 	glClearColor(1, 1, 1, 0);
 	glClear(GL_COLOR_BUFFER_BIT);
 
-// Altera a cor do desenho para azul
-	glColor3f(1.0f, 0.0f, 1.0f);     
+	// Altera a cor do desenho para azul
+	glColor3f(0.0f, 0.0f, 1.0f);     
+
+	//glPointSize(5.0);
+
 	// Desenha a casa
-	glBegin(GL_QUADS);
-		glVertex3f(-15.0f,-15.0f, 0.0f);
-		glVertex3f(-15.0f,  5.0f, 0.0f);       
-		glVertex3f( 15.0f,  5.0f, 0.0f);       
-		glVertex3f( 15.0f,-15.0f, 0.0f);
+	glBegin(GL_POINTS);
+
+	//for(ang = 0; ang < 2 * M_PI; ang += M_PI / 7.0)
+	for(ang = 0; ang < 2 * M_PI; ang += M_PI / 1120.0)
+	{
+		glVertex2f(20 * cos(ang), 20 * sin(ang));
+	}
+
 	glEnd();
 
 	glFlush();
@@ -192,22 +204,22 @@ void resizeWindowEvent(int width, int height)
 
 	glViewport(0, 0, width, height);
 
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	gluPerspective(60,fAspect,0.5,500);
-	//glOrtho(-65.0, 65.0, -65.0, 65.0, -400.0, 400.0);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	gluLookAt(0,100,100, 0,0,0, 0,1,0);
-
-	// VISUALIZAÇÃO 2D
 	// glMatrixMode(GL_PROJECTION);
 	// glLoadIdentity();
+	// gluPerspective(60,fAspect,0.5,500);
+	// //glOrtho(-65.0, 65.0, -65.0, 65.0, -400.0, 400.0);
+	// glMatrixMode(GL_MODELVIEW);
+	// glLoadIdentity();
+	// gluLookAt(0,100,100, 0,0,0, 0,1,0);
 
-	// if(width <= height)
-	// 	gluOrtho2D(-40.0f, 40.0f, -40.0f * height / width, 40.0f * height / width);
-	// else
-	// 	gluOrtho2D(-40.0f * width / height, 40.0f * width / height, -40.0f, 40.0f);
+	// VISUALIZAÇÃO 2D
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+
+	if(width <= height)
+		gluOrtho2D(-40.0f, 40.0f, -40.0f * height / width, 40.0f * height / width);
+	else
+		gluOrtho2D(-40.0f * width / height, 40.0f * width / height, -40.0f, 40.0f);
 }
 
 int createWindow(int width, int height, int x, int y)
