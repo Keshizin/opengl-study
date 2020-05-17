@@ -26,6 +26,18 @@ HGLRC hRC = NULL;
 HWND hWindow = NULL;
 HDC hDC = NULL;
 
+int TOTAL_CONTROL_POINTS = 4;
+
+// Pontos de controle
+float control_points[4][3] = {
+	{ -20.0,  0.0, 0.0},
+	{ -10.0, 25.0, 0.0},
+	{  10.0, -25.0, 0.0},
+	{  20.0,  0.0, 0.0}
+	// { 1.0, 0.0, 0.0},
+	// { 0.5, 0.2, 0.0}
+};
+
 // ----------------------------------------------------------------------------
 //  FUNCTION PROTOTYPE DECLARATION
 // ----------------------------------------------------------------------------
@@ -111,6 +123,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	LARGE_INTEGER startTime;
 	LARGE_INTEGER endTime;
 
+	// Definição de curvas parámetricas Bezier
+	glMap1f(GL_MAP1_VERTEX_3, 0.0, 1.0, 3, TOTAL_CONTROL_POINTS, &control_points[0][0]);
+	glEnable(GL_MAP1_VERTEX_3);
+
 	QueryPerformanceCounter(&endTime);
 
 	while(!isDone)
@@ -166,17 +182,31 @@ void frameEvent()
 	// Altera a cor do desenho para azul
 	glColor3f(0.0f, 0.0f, 1.0f);     
 
-	//glPointSize(5.0);
+	// // Define a espessura da linha
+	// glLineWidth(3);
 
-	// Desenha a casa
+	// // Calcula incremento de acordo com o total
+	// // de pontos intermediários
+	// float delta = 1.0/(float)prec;
+
+	// Traça a curva
+	glBegin(GL_LINE_STRIP);
+	for(float f = 0.0; f <= 1.00; f += 0.01) 
+		glEvalCoord1f(f);
+	glEnd();
+
+	// Define a cor para os pontos de controle: vermelho
+	glColor3f(1,0,0);
+
+	// Define tamanho de um ponto
+	glPointSize(5);
+
+	// Desenha os pontos de controle
 	glBegin(GL_POINTS);
 
-	//for(ang = 0; ang < 2 * M_PI; ang += M_PI / 7.0)
-	for(ang = 0; ang < 2 * M_PI; ang += M_PI / 1120.0)
-	{
-		glVertex2f(20 * cos(ang), 20 * sin(ang));
-	}
-
+	for(int i = 0; i < TOTAL_CONTROL_POINTS; ++i)
+		glVertex3fv(control_points[i]);
+	
 	glEnd();
 
 	glFlush();
@@ -192,6 +222,14 @@ void mouseMotionEvent(int x, int y)
 
 void keyboardEvent(unsigned char key, int state)
 {
+	// if(key == '1')
+	// {
+	// 	if(prec > 2)
+	// 		prec--;
+	// }
+
+	// if(key == '2')
+	// 	prec++;
 }
 
 void keyboardSpecialEvent(unsigned char key, int state)
