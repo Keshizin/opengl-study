@@ -1,12 +1,12 @@
 #include <windows.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
-#include <math.h>
+#include <wglext.h>
 
 #include <iostream>
 #include <string>
+#include <math.h>
 // #include <iomanip>
-// #include <GL/glu.h>
 
 #include <eventhandler.h>
 
@@ -26,17 +26,9 @@ HGLRC hRC = NULL;
 HWND hWindow = NULL;
 HDC hDC = NULL;
 
-int TOTAL_CONTROL_POINTS = 4;
-
-// Pontos de controle
-float control_points[4][3] = {
-	{ -20.0,  0.0, 0.0},
-	{ -10.0, 25.0, 0.0},
-	{  10.0, -25.0, 0.0},
-	{  20.0,  0.0, 0.0}
-	// { 1.0, 0.0, 0.0},
-	// { 0.5, 0.2, 0.0}
-};
+GLfloat tx = 0;
+GLfloat ang1 = 0, ang2 = -90;
+GLfloat win = 25;
 
 // ----------------------------------------------------------------------------
 //  FUNCTION PROTOTYPE DECLARATION
@@ -52,6 +44,8 @@ void mouseMotionEvent(int x, int y);
 void keyboardEvent(unsigned char key, int state);
 void keyboardSpecialEvent(unsigned char key, int state);
 void resizeWindowEvent(int width, int height);
+
+void initGL();
 
 // ----------------------------------------------------------------------------
 //  MAIN FUNCTION
@@ -122,10 +116,20 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	LARGE_INTEGER frameTime;
 	LARGE_INTEGER startTime;
 	LARGE_INTEGER endTime;
+	LARGE_INTEGER frequency;
+	unsigned long long timer = 0;
+	unsigned long long fps = 0;
 
-	// Definição de curvas parámetricas Bezier
-	glMap1f(GL_MAP1_VERTEX_3, 0.0, 1.0, 3, TOTAL_CONTROL_POINTS, &control_points[0][0]);
-	glEnable(GL_MAP1_VERTEX_3);
+	typedef BOOL(APIENTRY *PFNWGLSWAPINTERVALPROC)(int);
+	PFNWGLSWAPINTERVALPROC wglSwapIntervalEXT = NULL;
+
+	wglSwapIntervalEXT = (PFNWGLSWAPINTERVALPROC) wglGetProcAddress("wglSwapIntervalEXT");
+
+	if (wglSwapIntervalEXT) {
+	    wglSwapIntervalEXT(0);
+	}
+
+	initGL();
 
 	QueryPerformanceCounter(&endTime);
 
@@ -135,6 +139,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		// START OF FRAME
 		// --------------------------------------------------------------------
 		QueryPerformanceCounter(&startTime);
+		timer += frameTime.QuadPart;
 
 		while(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
 		{
@@ -152,6 +157,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		// --------------------------------------------------------------------
 		frameEvent();
 		SwapBuffers(hDC);
+
+		QueryPerformanceFrequency(&frequency);
+		
+		if(timer >= frequency.QuadPart)
+		{
+			std::cout << "> FPS: " << fps << std::endl;
+			fps = 0;
+			timer = 0;
+		}
+
+		fps++;
 		// --------------------------------------------------------------------
 		// END OF FRAME
 		// --------------------------------------------------------------------
@@ -160,55 +176,94 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		frameTime.QuadPart += endTime.QuadPart - startTime.QuadPart;
 	}
 
-	float ang;
-
 	std::cout << "> End of OpenGL Application!" << std::endl;
 	return 0;
 }
 
 GLfloat fAspect;
 
+	
+
 // ----------------------------------------------------------------------------
 //  FUNCTION DEFINITION
 // ----------------------------------------------------------------------------
+// Função para desenhar um "braço" do objeto
+void DesenhaBraco()
+{
+	glLineWidth(2);
+	glBegin(GL_LINE_LOOP);
+		glVertex2f(1.0,4.6);
+		glVertex2f(1.0,-0.8);
+		glVertex2f(-1.0,-0.8);
+		glVertex2f(-1.0,4.6);
+	glEnd();
+	glPointSize(2);
+	glBegin(GL_POINTS);
+		glVertex2i(0,0);              
+	glEnd();
+}
+
+// Função para desenhar a base do objeto           
+void DesenhaBase()
+{
+	glLineWidth(2);
+	glBegin(GL_LINE_LOOP);
+		glVertex2f(1.8,1);
+		glVertex2f(1.8,-1.5);
+		glVertex2f(1.0,-1.5);
+		glVertex2f(1.0,-1);
+		glVertex2f(-1.0,-1);
+		glVertex2f(-1.0,-1.5);
+		glVertex2f(-1.8,-1.5);
+		glVertex2f(-1.8,1);
+	glEnd();
+}
+
 void frameEvent()
 {
-	float ang;
-	//float M_PI = 3.141592;
-
-	glClearColor(1, 1, 1, 0);
+	// Muda para o sistema de coordenadas do modelo
+	glMatrixMode(GL_MODELVIEW);
+	// Inicializa a matriz de transformação corrente
+	glLoadIdentity();
+     
+	// Limpa a janela de visualização com a cor  
+	// de fundo definida previamente
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	// Altera a cor do desenho para azul
-	glColor3f(0.0f, 0.0f, 1.0f);     
-
-	// // Define a espessura da linha
-	// glLineWidth(3);
-
-	// // Calcula incremento de acordo com o total
-	// // de pontos intermediários
-	// float delta = 1.0/(float)prec;
-
-	// Traça a curva
-	glBegin(GL_LINE_STRIP);
-	for(float f = 0.0; f <= 1.00; f += 0.01) 
-		glEvalCoord1f(f);
+	// Desenha o "chão"
+	glColor3f(0.0f,0.0f,0.0f);
+	glLineWidth(4);
+	glBegin(GL_LINE_LOOP);
+		glVertex2f(-win,-3.9);
+		glVertex2f(win,-3.9);
 	glEnd();
-
-	// Define a cor para os pontos de controle: vermelho
-	glColor3f(1,0,0);
-
-	// Define tamanho de um ponto
-	glPointSize(5);
-
-	// Desenha os pontos de controle
-	glBegin(GL_POINTS);
-
-	for(int i = 0; i < TOTAL_CONTROL_POINTS; ++i)
-		glVertex3fv(control_points[i]);
+                               
+	// Desenha um objeto modelado com transformações hierárquicas
+	glPushMatrix();                   
 	
-	glEnd();
+	glTranslatef(tx,0.0f,0.0f);
+	glPushMatrix();    
 
+	glScalef(2.5f,2.5f,1.0f);
+	glColor3f(1.0f,0.0f,0.0f);
+	DesenhaBase();
+    
+	glPopMatrix();
+                    
+	glTranslatef(0.0f,1.5f,0.0f);
+	glRotatef(ang1,0.0f,0.0f,1.0f);    
+	glScalef(1.4f,1.4f,1.0f);
+	glColor3f(0.0f,1.0f,0.0f);
+	DesenhaBraco();
+                                    
+	glTranslatef(0.4f,2.6f,0.0f);
+	glRotatef(ang2,0.0f,0.0f,1.0f);
+	glColor3f(0.0f,0.0f,1.0f);
+	DesenhaBraco();
+                    
+	glPopMatrix();    
+      
+	// Executa os comandos OpenGL 
 	glFlush();
 }
 
@@ -222,14 +277,31 @@ void mouseMotionEvent(int x, int y)
 
 void keyboardEvent(unsigned char key, int state)
 {
-	// if(key == '1')
-	// {
-	// 	if(prec > 2)
-	// 		prec--;
-	// }
+	if(key == '1')
+	{
+		tx-=2;
+		if ( tx < -win )
+			tx = -win; 
+	}
 
-	// if(key == '2')
-	// 	prec++;
+	if(key == '2')
+	{
+		tx+=2;
+		if ( tx > win )
+			tx = win; 
+	}
+
+	if(key == '3')
+		ang1-=5;
+
+	if(key == '4')
+		ang1+=5;
+
+	if(key == '5')
+		ang2-=5;
+
+	if(key == '6')
+		ang2+=5; 
 }
 
 void keyboardSpecialEvent(unsigned char key, int state)
@@ -242,22 +314,31 @@ void resizeWindowEvent(int width, int height)
 
 	glViewport(0, 0, width, height);
 
-	// glMatrixMode(GL_PROJECTION);
-	// glLoadIdentity();
-	// gluPerspective(60,fAspect,0.5,500);
-	// //glOrtho(-65.0, 65.0, -65.0, 65.0, -400.0, 400.0);
-	// glMatrixMode(GL_MODELVIEW);
-	// glLoadIdentity();
-	// gluLookAt(0,100,100, 0,0,0, 0,1,0);
-
-	// VISUALIZAÇÃO 2D
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 
+	// VISUALIZAÇÃO 3D
+	// gluPerspective(45,fAspect,0.5,500);
+	// glMatrixMode(GL_MODELVIEW);
+	// glLoadIdentity();
+	// gluLookAt(0,60,150, 0,0,0, 0,1,0);
+
+	// VISUALIZAÇÃO 2D
 	if(width <= height)
-		gluOrtho2D(-40.0f, 40.0f, -40.0f * height / width, 40.0f * height / width);
+	{
+		gluOrtho2D(-25.0f, 25.0f, -25.0f * height / width, 25.0f * height / width);
+		win = 25.0f;
+	}
 	else
-		gluOrtho2D(-40.0f * width / height, 40.0f * width / height, -40.0f, 40.0f);
+	{
+		gluOrtho2D(-25.0f * width / height, 25.0f * width / height, -25.0f, 25.0f);
+		win = 25.0f * width / height;  
+	}
+}
+
+void initGL()
+{
+	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
 int createWindow(int width, int height, int x, int y)
