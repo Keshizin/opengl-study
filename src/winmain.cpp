@@ -26,9 +26,15 @@ HGLRC hRC = NULL;
 HWND hWindow = NULL;
 HDC hDC = NULL;
 
-GLfloat tx = 0;
-GLfloat ang1 = 0, ang2 = -90;
-GLfloat win = 25;
+GLfloat Tx;
+GLfloat Ty;
+GLfloat minX, maxX;
+GLfloat minY, maxY;
+GLfloat xStep;
+GLfloat yStep;
+GLfloat windowXmin, windowXmax;
+GLfloat windowYmin, windowYmax;
+
 
 // ----------------------------------------------------------------------------
 //  FUNCTION PROTOTYPE DECLARATION
@@ -187,84 +193,75 @@ GLfloat fAspect;
 // ----------------------------------------------------------------------------
 //  FUNCTION DEFINITION
 // ----------------------------------------------------------------------------
-// Função para desenhar um "braço" do objeto
-void DesenhaBraco()
-{
-	glLineWidth(2);
-	glBegin(GL_LINE_LOOP);
-		glVertex2f(1.0,4.6);
-		glVertex2f(1.0,-0.8);
-		glVertex2f(-1.0,-0.8);
-		glVertex2f(-1.0,4.6);
-	glEnd();
-	glPointSize(2);
-	glBegin(GL_POINTS);
-		glVertex2i(0,0);              
-	glEnd();
-}
-
-// Função para desenhar a base do objeto           
-void DesenhaBase()
-{
-	glLineWidth(2);
-	glBegin(GL_LINE_LOOP);
-		glVertex2f(1.8,1);
-		glVertex2f(1.8,-1.5);
-		glVertex2f(1.0,-1.5);
-		glVertex2f(1.0,-1);
-		glVertex2f(-1.0,-1);
-		glVertex2f(-1.0,-1.5);
-		glVertex2f(-1.8,-1.5);
-		glVertex2f(-1.8,1);
-	glEnd();
-}
-
 void frameEvent()
 {
-	// Muda para o sistema de coordenadas do modelo
+	if( (Tx+maxX) > windowXmax || (Tx+minX) < windowXmin )
+		xStep = -xStep;
+
+	// Muda a direção quando chega na borda superior ou inferior
+	if( (Ty+maxY) > windowYmax || (Ty+minY) < windowYmin )
+		yStep = -yStep;
+
+	// Move a casinha
+	Tx += xStep;
+	Ty += yStep;
+
+// Muda para o sistema de coordenadas do modelo
 	glMatrixMode(GL_MODELVIEW);
 	// Inicializa a matriz de transformação corrente
 	glLoadIdentity();
-     
+
 	// Limpa a janela de visualização com a cor  
 	// de fundo definida previamente
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	// Desenha o "chão"
-	glColor3f(0.0f,0.0f,0.0f);
-	glLineWidth(4);
-	glBegin(GL_LINE_LOOP);
-		glVertex2f(-win,-3.9);
-		glVertex2f(win,-3.9);
-	glEnd();
-                               
-	// Desenha um objeto modelado com transformações hierárquicas
-	glPushMatrix();                   
-	
-	glTranslatef(tx,0.0f,0.0f);
-	glPushMatrix();    
+	// Aplica uma translação sobre a casinha
+	glTranslatef(Tx, Ty, 0.0f);
 
-	glScalef(2.5f,2.5f,1.0f);
-	glColor3f(1.0f,0.0f,0.0f);
-	DesenhaBase();
-    
-	glPopMatrix();
-                    
-	glTranslatef(0.0f,1.5f,0.0f);
-	glRotatef(ang1,0.0f,0.0f,1.0f);    
-	glScalef(1.4f,1.4f,1.0f);
-	glColor3f(0.0f,1.0f,0.0f);
-	DesenhaBraco();
-                                    
-	glTranslatef(0.4f,2.6f,0.0f);
-	glRotatef(ang2,0.0f,0.0f,1.0f);
-	glColor3f(0.0f,0.0f,1.0f);
-	DesenhaBraco();
-                    
-	glPopMatrix();    
-      
-	// Executa os comandos OpenGL 
-	glFlush();
+	// Desenha uma casinha composta de um quadrado e um triângulo
+
+	// Altera a cor do desenho para azul
+	glColor3f(0.0f, 0.0f, 1.0f);	
+	// Desenha a casa
+	glBegin(GL_QUADS);
+		glVertex2f(-15.0f,-15.0f);
+		glVertex2f(-15.0f,  5.0f);
+		glVertex2f( 15.0f,  5.0f);
+		glVertex2f( 15.0f,-15.0f);
+	glEnd();
+
+	// Altera a cor do desenho para branco
+	glColor3f(1.0f, 1.0f, 1.0f);  
+	// Desenha a porta e a janela  
+	glBegin(GL_QUADS);
+		glVertex2f(-4.0f,-14.5f);
+		glVertex2f(-4.0f,  0.0f);
+		glVertex2f( 4.0f,  0.0f);
+		glVertex2f( 4.0f,-14.5f);
+		glVertex2f( 7.0f,-5.0f);
+		glVertex2f( 7.0f,-1.0f);
+		glVertex2f(13.0f,-1.0f);
+		glVertex2f(13.0f,-5.0f);
+	glEnd();
+
+	// Altera a cor do desenho para azul
+	glColor3f(0.0f, 0.0f, 1.0f);	
+	// Desenha as "linhas" da janela 
+	glBegin(GL_LINES);
+		glVertex2f( 7.0f,-3.0f);
+		glVertex2f(13.0f,-3.0f);
+		glVertex2f(10.0f,-1.0f);
+		glVertex2f(10.0f,-5.0f);
+	glEnd();
+
+	// Altera a cor do desenho para vermelho
+	glColor3f(1.0f, 0.0f, 0.0f); 
+	// Desenha o telhado
+	glBegin(GL_TRIANGLES);
+		glVertex2f(-15.0f, 5.0f);
+		glVertex2f(  0.0f,17.0f);
+		glVertex2f( 15.0f, 5.0f);
+	glEnd();
 }
 
 void mouseEvent(int button, int state, int x, int y)
@@ -277,31 +274,6 @@ void mouseMotionEvent(int x, int y)
 
 void keyboardEvent(unsigned char key, int state)
 {
-	if(key == '1')
-	{
-		tx-=2;
-		if ( tx < -win )
-			tx = -win; 
-	}
-
-	if(key == '2')
-	{
-		tx+=2;
-		if ( tx > win )
-			tx = win; 
-	}
-
-	if(key == '3')
-		ang1-=5;
-
-	if(key == '4')
-		ang1+=5;
-
-	if(key == '5')
-		ang2-=5;
-
-	if(key == '6')
-		ang2+=5; 
 }
 
 void keyboardSpecialEvent(unsigned char key, int state)
@@ -326,19 +298,34 @@ void resizeWindowEvent(int width, int height)
 	// VISUALIZAÇÃO 2D
 	if(width <= height)
 	{
-		gluOrtho2D(-25.0f, 25.0f, -25.0f * height / width, 25.0f * height / width);
-		win = 25.0f;
+		gluOrtho2D(-40.0f, 40.0f, -40.0f * height / width, 40.0f * height / width);
+		windowXmin = -40.0f;
+		windowXmax =  40.0f;
+		windowYmin = -40.0f * height / width;
+		windowYmax = 40.0f * height / width;
 	}
 	else
 	{
-		gluOrtho2D(-25.0f * width / height, 25.0f * width / height, -25.0f, 25.0f);
-		win = 25.0f * width / height;  
+		gluOrtho2D(-40.0f * width / height, 40.0f * width / height, -40.0f, 40.0f);
+		windowXmin = -40.0f * width / height;
+		windowXmax =  40.0f * width / height;
+		windowYmin = -40.0f;
+		windowYmax =  40.0f;
 	}
 }
 
 void initGL()
 {
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+
+	xStep = yStep = 1.0f;
+	Tx = Ty = 0.0f;
+	minX = -15.0f;
+	maxX =  15.0f;
+	minY = -15.0f;
+	maxY =  17.0f;
+	windowXmin = windowYmin = -40.0f;
+	windowXmax = windowYmax = 40.0f;
 }
 
 int createWindow(int width, int height, int x, int y)
