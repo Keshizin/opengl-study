@@ -26,15 +26,10 @@ HGLRC hRC = NULL;
 HWND hWindow = NULL;
 HDC hDC = NULL;
 
-GLfloat Tx;
-GLfloat Ty;
-GLfloat minX, maxX;
-GLfloat minY, maxY;
-GLfloat xStep;
-GLfloat yStep;
-GLfloat windowXmin, windowXmax;
-GLfloat windowYmin, windowYmax;
-
+GLfloat angle, fAspect;
+GLfloat deslocamentoX, deslocamentoY, deslocamentoZ;
+int w;
+int h;
 
 // ----------------------------------------------------------------------------
 //  FUNCTION PROTOTYPE DECLARATION
@@ -186,42 +181,19 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	return 0;
 }
 
-GLfloat fAspect;
-
-	
-
 // ----------------------------------------------------------------------------
 //  FUNCTION DEFINITION
 // ----------------------------------------------------------------------------
 void frameEvent()
 {
-	if( (Tx+maxX) > windowXmax || (Tx+minX) < windowXmin )
-		xStep = -xStep;
-
-	// Muda a direção quando chega na borda superior ou inferior
-	if( (Ty+maxY) > windowYmax || (Ty+minY) < windowYmin )
-		yStep = -yStep;
-
-	// Move a casinha
-	Tx += xStep;
-	Ty += yStep;
-
-// Muda para o sistema de coordenadas do modelo
-	glMatrixMode(GL_MODELVIEW);
-	// Inicializa a matriz de transformação corrente
-	glLoadIdentity();
-
 	// Limpa a janela de visualização com a cor  
 	// de fundo definida previamente
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	// Aplica uma translação sobre a casinha
-	glTranslatef(Tx, Ty, 0.0f);
-
 	// Desenha uma casinha composta de um quadrado e um triângulo
 
 	// Altera a cor do desenho para azul
-	glColor3f(0.0f, 0.0f, 1.0f);	
+	glColor3f(0.0f, 0.0f, 1.0f);
 	// Desenha a casa
 	glBegin(GL_QUADS);
 		glVertex2f(-15.0f,-15.0f);
@@ -245,8 +217,8 @@ void frameEvent()
 	glEnd();
 
 	// Altera a cor do desenho para azul
-	glColor3f(0.0f, 0.0f, 1.0f);	
-	// Desenha as "linhas" da janela 
+	glColor3f(0.0f, 0.0f, 1.0f);
+	// Desenha as "linhas" da janela  
 	glBegin(GL_LINES);
 		glVertex2f( 7.0f,-3.0f);
 		glVertex2f(13.0f,-3.0f);
@@ -258,7 +230,7 @@ void frameEvent()
 	glColor3f(1.0f, 0.0f, 0.0f); 
 	// Desenha o telhado
 	glBegin(GL_TRIANGLES);
-		glVertex2f(-15.0f, 5.0f);
+		glVertex2f(-15.0f, 5.0f);   
 		glVertex2f(  0.0f,17.0f);
 		glVertex2f( 15.0f, 5.0f);
 	glEnd();
@@ -266,6 +238,25 @@ void frameEvent()
 
 void mouseEvent(int button, int state, int x, int y)
 {
+	if (button == 1 && state == 0) {  // zoom in
+			if(angle >= 10)
+				angle -= 5;
+	}
+	
+	if (button == 3 && state == 0) { // zoom out
+			if(angle <= 130)
+				angle += 5;
+	}
+
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+
+	// VISUALIZAÇÃO 3D
+	gluPerspective(angle, fAspect,0.5,500);
+	// glOrtho(-win, win, -win, win, -200.0, 200.0);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	gluLookAt(0+deslocamentoX,0+deslocamentoY,150+deslocamentoZ,0+deslocamentoX,0+deslocamentoY,0+deslocamentoZ, 0,1,0);
 }
 
 void mouseMotionEvent(int x, int y)
@@ -274,6 +265,45 @@ void mouseMotionEvent(int x, int y)
 
 void keyboardEvent(unsigned char key, int state)
 {
+	if(key == '1' && state == 0)
+	{
+		deslocamentoY += 2;	
+	}
+
+	if(key == '2' && state == 0)
+	{
+		deslocamentoY -= 2;	
+	}
+
+	if(key == '3' && state == 0)
+	{
+		deslocamentoX -= 2;	
+	}
+
+	if(key == '4' && state == 0)
+	{
+		deslocamentoX += 2;	
+	}
+
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+
+	// VISUALIZAÇÃO 3D
+	gluPerspective(angle, fAspect,0.5,500);
+	// glOrtho(-win, win, -win, win, -200.0, 200.0);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	gluLookAt(0+deslocamentoX,0+deslocamentoY,150+deslocamentoZ,0+deslocamentoX,0+deslocamentoY,0+deslocamentoZ, 0,1,0);
+
+	// VISUALIZAÇÃO 2D
+	// if(w <= h)
+	// {
+	// 	gluOrtho2D(-win + deslocamentoX, win + deslocamentoX, -win * h / w + deslocamentoY, win * h / w + deslocamentoY);
+	// }
+	// else
+	// {
+	// 	gluOrtho2D(-win * w / h + deslocamentoX, win * w / h + deslocamentoX, -win + deslocamentoY, win + deslocamentoY);
+	// }
 }
 
 void keyboardSpecialEvent(unsigned char key, int state)
@@ -282,7 +312,8 @@ void keyboardSpecialEvent(unsigned char key, int state)
 
 void resizeWindowEvent(int width, int height)
 {
-	fAspect = (GLfloat)width/(GLfloat)height;
+	w = width;
+	h = height;
 
 	glViewport(0, 0, width, height);
 
@@ -290,42 +321,34 @@ void resizeWindowEvent(int width, int height)
 	glLoadIdentity();
 
 	// VISUALIZAÇÃO 3D
-	// gluPerspective(45,fAspect,0.5,500);
-	// glMatrixMode(GL_MODELVIEW);
-	// glLoadIdentity();
-	// gluLookAt(0,60,150, 0,0,0, 0,1,0);
+	fAspect = (GLfloat)width / (GLfloat)height;
+	gluPerspective(angle, fAspect,0.5,500);
+	// glOrtho(-win, win, -win, win, -200.0, 200.0);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	gluLookAt(0+deslocamentoX,0+deslocamentoY,150+deslocamentoZ,0+deslocamentoX,0+deslocamentoY,0+deslocamentoZ, 0,1,0);
 
 	// VISUALIZAÇÃO 2D
-	if(width <= height)
-	{
-		gluOrtho2D(-40.0f, 40.0f, -40.0f * height / width, 40.0f * height / width);
-		windowXmin = -40.0f;
-		windowXmax =  40.0f;
-		windowYmin = -40.0f * height / width;
-		windowYmax = 40.0f * height / width;
-	}
-	else
-	{
-		gluOrtho2D(-40.0f * width / height, 40.0f * width / height, -40.0f, 40.0f);
-		windowXmin = -40.0f * width / height;
-		windowXmax =  40.0f * width / height;
-		windowYmin = -40.0f;
-		windowYmax =  40.0f;
-	}
+	// if(width <= height)
+	// {
+	// 	gluOrtho2D(-win + deslocamentoX, win + deslocamentoX, -win * height / width + deslocamentoY, win * height / width + deslocamentoY);
+	// }
+	// else
+	// {
+	// 	gluOrtho2D(-win * width / height + deslocamentoX, win * width / height + deslocamentoX, -win + deslocamentoY, win + deslocamentoY);
+	// }
 }
 
 void initGL()
 {
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+	angle=45;
 
-	xStep = yStep = 1.0f;
-	Tx = Ty = 0.0f;
-	minX = -15.0f;
-	maxX =  15.0f;
-	minY = -15.0f;
-	maxY =  17.0f;
-	windowXmin = windowYmin = -40.0f;
-	windowXmax = windowYmax = 40.0f;
+	// Inicializa as variáveis utilizadas para implementação
+	// da operação de pan
+	deslocamentoX = 0.0f;
+	deslocamentoY = 0.0f;
+	deslocamentoZ = 0.0f;
 }
 
 int createWindow(int width, int height, int x, int y)
