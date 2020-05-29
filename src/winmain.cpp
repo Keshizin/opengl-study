@@ -28,8 +28,28 @@ HDC hDC = NULL;
 
 GLfloat angle, fAspect;
 GLfloat deslocamentoX, deslocamentoY, deslocamentoZ;
+GLfloat win;
 int w;
 int h;
+
+GLubyte bitmap[32] = {
+	0x00, 0x00,
+	0x03, 0xc0,
+	0x0c, 0x30,
+	0x10, 0x08,
+	0x23, 0xc4,
+	0x24, 0x24,
+	0x48, 0x12,
+	0x48, 0x12,
+	0x40, 0x02,
+	0x40, 0x02,
+	0x26, 0x64,
+	0x26, 0x64,
+	0x10, 0x08,
+	0x0c, 0x30,
+	0x03, 0xc0,
+	0x00, 0x00
+};
 
 // ----------------------------------------------------------------------------
 //  FUNCTION PROTOTYPE DECLARATION
@@ -190,50 +210,15 @@ void frameEvent()
 	// de fundo definida previamente
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	// Desenha uma casinha composta de um quadrado e um triângulo
+	// Altera a cor do desenho para preto
+	glColor3f(1.0f, 0.0f, 0.0f);
 
-	// Altera a cor do desenho para azul
-	glColor3f(0.0f, 0.0f, 1.0f);
-	// Desenha a casa
-	glBegin(GL_QUADS);
-		glVertex2f(-15.0f,-15.0f);
-		glVertex2f(-15.0f,  5.0f);
-		glVertex2f( 15.0f,  5.0f);
-		glVertex2f( 15.0f,-15.0f);
-	glEnd();
+	// Ajusta a posição inicial de desenho do bitmap
+	glRasterPos2i(0, 0);
 
-	// Altera a cor do desenho para branco
-	glColor3f(1.0f, 1.0f, 1.0f);  
-	// Desenha a porta e a janela  
-	glBegin(GL_QUADS);
-		glVertex2f(-4.0f,-14.5f);
-		glVertex2f(-4.0f,  0.0f);
-		glVertex2f( 4.0f,  0.0f);
-		glVertex2f( 4.0f,-14.5f);
-		glVertex2f( 7.0f,-5.0f);
-		glVertex2f( 7.0f,-1.0f);
-		glVertex2f(13.0f,-1.0f);
-		glVertex2f(13.0f,-5.0f);
-	glEnd();
-
-	// Altera a cor do desenho para azul
-	glColor3f(0.0f, 0.0f, 1.0f);
-	// Desenha as "linhas" da janela  
-	glBegin(GL_LINES);
-		glVertex2f( 7.0f,-3.0f);
-		glVertex2f(13.0f,-3.0f);
-		glVertex2f(10.0f,-1.0f);
-		glVertex2f(10.0f,-5.0f);
-	glEnd();
-
-	// Altera a cor do desenho para vermelho
-	glColor3f(1.0f, 0.0f, 0.0f); 
-	// Desenha o telhado
-	glBegin(GL_TRIANGLES);
-		glVertex2f(-15.0f, 5.0f);   
-		glVertex2f(  0.0f,17.0f);
-		glVertex2f( 15.0f, 5.0f);
-	glEnd();
+	// Desenha 10 cópias
+	for(int i=0;i<10;++i)
+		glBitmap(16, 16, 0.0, 0.0, 16.0, 16.0, bitmap);
 }
 
 void mouseEvent(int button, int state, int x, int y)
@@ -252,11 +237,19 @@ void mouseEvent(int button, int state, int x, int y)
 	glLoadIdentity();
 
 	// VISUALIZAÇÃO 3D
-	gluPerspective(angle, fAspect,0.5,500);
+	//gluPerspective(angle, fAspect,0.5,500);
 	// glOrtho(-win, win, -win, win, -200.0, 200.0);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	gluLookAt(0+deslocamentoX,0+deslocamentoY,150+deslocamentoZ,0+deslocamentoX,0+deslocamentoY,0+deslocamentoZ, 0,1,0);
+	// glMatrixMode(GL_MODELVIEW);
+	// glLoadIdentity();
+	// gluLookAt(0+deslocamentoX,0+deslocamentoY,150+deslocamentoZ,0+deslocamentoX,0+deslocamentoY,0+deslocamentoZ, 0,1,0);
+	if(w <= h)
+	{
+		gluOrtho2D(-win + deslocamentoX, win + deslocamentoX, -win * h / w + deslocamentoY, win * h / w + deslocamentoY);
+	}
+	else
+	{
+		gluOrtho2D(-win * w / h + deslocamentoX, win * w / h + deslocamentoX, -win + deslocamentoY, win + deslocamentoY);
+	}
 }
 
 void mouseMotionEvent(int x, int y)
@@ -289,21 +282,21 @@ void keyboardEvent(unsigned char key, int state)
 	glLoadIdentity();
 
 	// VISUALIZAÇÃO 3D
-	gluPerspective(angle, fAspect,0.5,500);
+	// gluPerspective(angle, fAspect,0.5,500);
 	// glOrtho(-win, win, -win, win, -200.0, 200.0);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	gluLookAt(0+deslocamentoX,0+deslocamentoY,150+deslocamentoZ,0+deslocamentoX,0+deslocamentoY,0+deslocamentoZ, 0,1,0);
+	// glMatrixMode(GL_MODELVIEW);
+	// glLoadIdentity();
+	// gluLookAt(0+deslocamentoX,0+deslocamentoY,150+deslocamentoZ,0+deslocamentoX,0+deslocamentoY,0+deslocamentoZ, 0,1,0);
 
 	// VISUALIZAÇÃO 2D
-	// if(w <= h)
-	// {
-	// 	gluOrtho2D(-win + deslocamentoX, win + deslocamentoX, -win * h / w + deslocamentoY, win * h / w + deslocamentoY);
-	// }
-	// else
-	// {
-	// 	gluOrtho2D(-win * w / h + deslocamentoX, win * w / h + deslocamentoX, -win + deslocamentoY, win + deslocamentoY);
-	// }
+	if(w <= h)
+	{
+		gluOrtho2D(-win + deslocamentoX, win + deslocamentoX, -win * h / w + deslocamentoY, win * h / w + deslocamentoY);
+	}
+	else
+	{
+		gluOrtho2D(-win * w / h + deslocamentoX, win * w / h + deslocamentoX, -win + deslocamentoY, win + deslocamentoY);
+	}
 }
 
 void keyboardSpecialEvent(unsigned char key, int state)
@@ -321,27 +314,30 @@ void resizeWindowEvent(int width, int height)
 	glLoadIdentity();
 
 	// VISUALIZAÇÃO 3D
-	fAspect = (GLfloat)width / (GLfloat)height;
-	gluPerspective(angle, fAspect,0.5,500);
+	// fAspect = (GLfloat)width / (GLfloat)height;
+	// gluPerspective(angle, fAspect,0.5,500);
 	// glOrtho(-win, win, -win, win, -200.0, 200.0);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	gluLookAt(0+deslocamentoX,0+deslocamentoY,150+deslocamentoZ,0+deslocamentoX,0+deslocamentoY,0+deslocamentoZ, 0,1,0);
+	// glMatrixMode(GL_MODELVIEW);
+	// glLoadIdentity();
+	// gluLookAt(0+deslocamentoX,0+deslocamentoY,150+deslocamentoZ,0+deslocamentoX,0+deslocamentoY,0+deslocamentoZ, 0,1,0);
 
 	// VISUALIZAÇÃO 2D
-	// if(width <= height)
-	// {
-	// 	gluOrtho2D(-win + deslocamentoX, win + deslocamentoX, -win * height / width + deslocamentoY, win * height / width + deslocamentoY);
-	// }
-	// else
-	// {
-	// 	gluOrtho2D(-win * width / height + deslocamentoX, win * width / height + deslocamentoX, -win + deslocamentoY, win + deslocamentoY);
-	// }
+	if(width <= height)
+	{
+		gluOrtho2D(-win + deslocamentoX, win + deslocamentoX, -win * height / width + deslocamentoY, win * height / width + deslocamentoY);
+	}
+	else
+	{
+		gluOrtho2D(-win * width / height + deslocamentoX, win * width / height + deslocamentoX, -win + deslocamentoY, win + deslocamentoY);
+	}
 }
 
 void initGL()
 {
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+	win = 5.0f;
+	glPixelStorei (GL_UNPACK_ALIGNMENT, 1);
+
 	angle=45;
 
 	// Inicializa as variáveis utilizadas para implementação
