@@ -9,6 +9,7 @@
 // #include <iomanip>
 
 #include <eventhandler.h>
+#include <diblib.h>
 
 // #include <jni.h>
 
@@ -51,6 +52,8 @@ GLubyte bitmap[32] = {
 	0x00, 0x00
 };
 
+DIB test;
+
 // ----------------------------------------------------------------------------
 //  FUNCTION PROTOTYPE DECLARATION
 // ----------------------------------------------------------------------------
@@ -73,6 +76,7 @@ void initGL();
 // ----------------------------------------------------------------------------
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
+	test.loadFile("assets/1bpp.bmp");
 	// char path[200]="-Djava.class.path=src;lib\\camunda-bpmn-model-7.13.0-alpha3.jar;lib\\camunda-xml-model-7.13.0-alpha3.jar;";
 
 	// JavaVM *jvm;
@@ -218,7 +222,9 @@ void frameEvent()
 
 	// Desenha 10 cópias
 	for(int i=0;i<10;++i)
-		glBitmap(16, 16, 0.0, 0.0, 16.0, 16.0, bitmap);
+		//glBitmap(16, 16, 0.0, 0.0, 16.0, 16.0, bitmap);
+		glBitmap(test.getWidth(), test.getHeight(), 0.0, 0.0, test.getWidth(), test.getHeight(), test.getColorIndex()); 
+
 }
 
 void mouseEvent(int button, int state, int x, int y)
@@ -336,7 +342,7 @@ void initGL()
 {
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 	win = 5.0f;
-	glPixelStorei (GL_UNPACK_ALIGNMENT, 1);
+	glPixelStorei (GL_UNPACK_ALIGNMENT, 4);
 
 	angle=45;
 

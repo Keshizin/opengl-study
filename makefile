@@ -21,8 +21,8 @@ OBJRESFILES=$(patsubst $(RES_DIR)/%.rc,$(OBJ_DIR)/%.o,$(RESSRCFILES))
 # J_LIB_FLAGS=-ljvm
 
 INC_FLAGS=-I$(INC_DIR)
-LIB_FLAGS=-lgdi32 -lopengl32 -lglu32 -ljpeg
-DIRLIB_FLAG=-L$(LIB_DIR)/jpeg
+LIB_FLAGS=-lgdi32 -lopengl32 -lglu32 -ljpeg -ldibr
+DIRLIB_FLAG=-L$(LIB_DIR) -L$(LIB_DIR)/jpeg
 
 all: $(BIN_DIR)/$(OUTPUT_NAME)
 
