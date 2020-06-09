@@ -1,3 +1,13 @@
+/*
+	diblib.h
+
+	This file define the application interface for BITMAP READER.
+
+	Copyright (c) 2020 Takeshi Ishikawa
+	This file is part of the BITMAP READER and is licensed under the MIT license.
+	For conditions of distribution and use, see the accompanying LICENSE file.
+*/
+
 #ifndef DIBLIB_INCLUDE_H
 #define DIBLIB_INCLUDE_H
 
@@ -103,16 +113,22 @@ public:
 	~DIB();
 
 	void loadFile(std::string filename);
+	void release();
+	void printDump();
 	void printColorIndexDump();
+
 	unsigned long getWidth();
 	unsigned long getHeight();
-
 	unsigned char *getColorIndex();
+	unsigned long getColorTableSize();
+	unsigned long getColorIndexSize();
 
 private:
 	DIBLIB::BITMAPFILEHEADER bmfHeader;
 	DIBLIB::BITMAPINFOHEADER bmiHeader;
 	DIBLIB::RGBQUAD *bmiColors;
+	unsigned long colorTableSize;
+	unsigned long colorIndexSize;
 	unsigned char *colorIndex;
 };
 

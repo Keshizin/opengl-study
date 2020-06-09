@@ -2,4 +2,4 @@ bin/*.exe
 obj/*.o
 tmp/*.d
 *.log
-assets/
+assets/*.bmp

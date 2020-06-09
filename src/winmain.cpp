@@ -33,25 +33,6 @@ GLfloat win;
 int w;
 int h;
 
-GLubyte bitmap[32] = {
-	0x00, 0x00,
-	0x03, 0xc0,
-	0x0c, 0x30,
-	0x10, 0x08,
-	0x23, 0xc4,
-	0x24, 0x24,
-	0x48, 0x12,
-	0x48, 0x12,
-	0x40, 0x02,
-	0x40, 0x02,
-	0x26, 0x64,
-	0x26, 0x64,
-	0x10, 0x08,
-	0x0c, 0x30,
-	0x03, 0xc0,
-	0x00, 0x00
-};
-
 DIB test;
 
 // ----------------------------------------------------------------------------
@@ -76,7 +57,7 @@ void initGL();
 // ----------------------------------------------------------------------------
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
-	test.loadFile("assets/1bpp.bmp");
+	test.loadFile("assets/24bpp_test.bmp");
 	// char path[200]="-Djava.class.path=src;lib\\camunda-bpmn-model-7.13.0-alpha3.jar;lib\\camunda-xml-model-7.13.0-alpha3.jar;";
 
 	// JavaVM *jvm;
@@ -129,7 +110,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	std::cout << "> Welcome to OpenGL Application" << std::endl;
 
-	ret = createWindow(450, 450, 5, 5);
+	//ret = createWindow(450, 450, 5, 5);
+	ret = createWindow(1016, 800, 5, 5);
 	std::cout << "> window created: " << ret << std::endl;
 
 	ret = ShowWindow(hWindow, SW_SHOW);
@@ -205,6 +187,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	return 0;
 }
 
+GLubyte img[400 * 400 * 3] = {0};
+
 // ----------------------------------------------------------------------------
 //  FUNCTION DEFINITION
 // ----------------------------------------------------------------------------
@@ -221,10 +205,13 @@ void frameEvent()
 	glRasterPos2i(0, 0);
 
 	// Desenha 10 cópias
-	for(int i=0;i<10;++i)
-		//glBitmap(16, 16, 0.0, 0.0, 16.0, 16.0, bitmap);
-		glBitmap(test.getWidth(), test.getHeight(), 0.0, 0.0, test.getWidth(), test.getHeight(), test.getColorIndex()); 
-
+	// for(int i=0;i<10;++i)
+	// 	//glBitmap(16, 16, 0.0, 0.0, 16.0, 16.0, bitmap);
+	
+	//glBitmap(test.getWidth(), test.getHeight(), 0.0, 0.0, test.getWidth(), test.getHeight(), test.getColorIndex());
+	glDrawPixels(test.getWidth(), test.getHeight(), GL_RGB, GL_UNSIGNED_BYTE, test.getColorIndex());
+	glRasterPos2i(100, 100);
+	glCopyPixels(0, 0, 400, 400, GL_COLOR);
 }
 
 void mouseEvent(int button, int state, int x, int y)
@@ -328,14 +315,17 @@ void resizeWindowEvent(int width, int height)
 	// gluLookAt(0+deslocamentoX,0+deslocamentoY,150+deslocamentoZ,0+deslocamentoX,0+deslocamentoY,0+deslocamentoZ, 0,1,0);
 
 	// VISUALIZAÇÃO 2D
-	if(width <= height)
-	{
-		gluOrtho2D(-win + deslocamentoX, win + deslocamentoX, -win * height / width + deslocamentoY, win * height / width + deslocamentoY);
-	}
-	else
-	{
-		gluOrtho2D(-win * width / height + deslocamentoX, win * width / height + deslocamentoX, -win + deslocamentoY, win + deslocamentoY);
-	}
+	// if(width <= height)
+	// {
+	// 	gluOrtho2D(-win + deslocamentoX, win + deslocamentoX, -win * height / width + deslocamentoY, win * height / width + deslocamentoY);
+	// }
+	// else
+	// {
+	// 	gluOrtho2D(-win * width / height + deslocamentoX, win * width / height + deslocamentoX, -win + deslocamentoY, win + deslocamentoY);
+	// }
+
+	gluOrtho2D(0, width, 0, height);
+
 }
 
 void initGL()
@@ -343,6 +333,7 @@ void initGL()
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 	win = 5.0f;
 	glPixelStorei (GL_UNPACK_ALIGNMENT, 4);
+	// glPixelStorei (GL_UNPACK_SWAP_BYTES, GL_TRUE);
 
 	angle=45;
 
