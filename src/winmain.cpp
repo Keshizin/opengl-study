@@ -57,7 +57,7 @@ void initGL();
 // ----------------------------------------------------------------------------
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
-	test.loadFile("assets/24bpp_test.bmp");
+	test.loadFile("assets/24bpp.bmp", true);
 	// char path[200]="-Djava.class.path=src;lib\\camunda-bpmn-model-7.13.0-alpha3.jar;lib\\camunda-xml-model-7.13.0-alpha3.jar;";
 
 	// JavaVM *jvm;
@@ -210,8 +210,8 @@ void frameEvent()
 	
 	//glBitmap(test.getWidth(), test.getHeight(), 0.0, 0.0, test.getWidth(), test.getHeight(), test.getColorIndex());
 	glDrawPixels(test.getWidth(), test.getHeight(), GL_RGB, GL_UNSIGNED_BYTE, test.getColorIndex());
-	glRasterPos2i(100, 100);
-	glCopyPixels(0, 0, 400, 400, GL_COLOR);
+	// glRasterPos2i(100, 100);
+	// glCopyPixels(0, 0, 400, 400, GL_COLOR);
 }
 
 void mouseEvent(int button, int state, int x, int y)

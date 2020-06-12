@@ -15,6 +15,8 @@
 
 namespace DIBLIB
 {
+	enum {DIBLIB_RGB, DIBLIB_RLE8, DIBLIB_RLE4, DIBLIB_BITFIELDS, DIBLIB_JPEG, DIBLIB_PNG};
+
 	class WORD
 	{
 	public:
@@ -87,9 +89,11 @@ namespace DIBLIB
 		void swap();
 
 		DWORD getBiSize();
-		DWORD getBiSizeImage();
 		DWORD getBiWidth();
 		DWORD getBiHeight();
+		WORD getBiBitCount();
+		DWORD getBiCompression();
+		DWORD getBiSizeImage();
 
 	private:
 		DWORD biSize;
@@ -112,7 +116,7 @@ public:
 	DIB();
 	~DIB();
 
-	void loadFile(std::string filename);
+	void loadFile(std::string filename, int swap);
 	void release();
 	void printDump();
 	void printColorIndexDump();
