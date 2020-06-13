@@ -28,12 +28,56 @@ HWND hWindow = NULL;
 HDC hDC = NULL;
 
 GLfloat angle, fAspect;
+GLfloat rotX, rotY, rotX_ini, rotY_ini;
+GLfloat obsX, obsY, obsZ, obsX_ini, obsY_ini, obsZ_ini;
+int x_ini,y_ini,bot;
 GLfloat deslocamentoX, deslocamentoY, deslocamentoZ;
 GLfloat win;
 int w;
 int h;
 
 DIB test;
+
+typedef struct {
+	float x,y,z;	// posição no espaço
+} VERT;
+
+// Define uma face
+typedef struct {
+	int total;	// total de vértices
+	int ind[4];	// índices para o vetor de vértices
+} FACE;
+
+// Define um objeto 3D
+typedef struct {
+	VERT *vertices;		// aponta para os vértices
+	FACE *faces;		// aponta para as faces
+	int total_faces;	// total de faces no objeto
+} OBJ;
+
+// Definição dos vértices
+VERT vertices[] = {
+	{ -1, 0, -1 },	// 0 canto inf esquerdo tras.
+	{  1, 0, -1 },	// 1 canfo inf direito  tras.
+	{  1, 0,  1 },	// 2 canto inf direito  diant.
+	{ -1, 0,  1 },  // 3 canto inf esquerdo diant.
+	{  0, 2,  0 },  // 4 topo
+};
+
+// Definição das faces
+FACE faces[] = {
+	{ 4, { 0,1,2,3 }},	// base
+	{ 3, { 0,1,4,-1 }},	// lado traseiro
+	{ 3, { 0,3,4,-1 }},	// lado esquerdo
+	{ 3, { 1,2,4,-1 }},	// lado direito
+	{ 3, { 3,2,4,-1 }}	// lado dianteiro
+};
+
+// Finalmente, define o objeto pirâmide
+OBJ piramide = {
+	vertices, faces, 5 };
+
+void drawOBJ(OBJ *obj);
 
 // ----------------------------------------------------------------------------
 //  FUNCTION PROTOTYPE DECLARATION
@@ -202,94 +246,190 @@ void frameEvent()
 	glColor3f(1.0f, 0.0f, 0.0f);
 
 	// Ajusta a posição inicial de desenho do bitmap
-	glRasterPos2i(0, 0);
+	// glRasterPos2i(0, 0);
 
 	// Desenha 10 cópias
 	// for(int i=0;i<10;++i)
 	// 	//glBitmap(16, 16, 0.0, 0.0, 16.0, 16.0, bitmap);
 	
 	//glBitmap(test.getWidth(), test.getHeight(), 0.0, 0.0, test.getWidth(), test.getHeight(), test.getColorIndex());
-	glDrawPixels(test.getWidth(), test.getHeight(), GL_RGB, GL_UNSIGNED_BYTE, test.getColorIndex());
-	glRasterPos2i(100, 100);
-	glCopyPixels(0, 0, 400, 400, GL_COLOR);
+	// glDrawPixels(test.getWidth(), test.getHeight(), GL_RGB, GL_UNSIGNED_BYTE, test.getColorIndex());
+	// glRasterPos2i(100, 100);
+	// glCopyPixels(0, 0, 400, 400, GL_COLOR);
+
+	drawOBJ(&piramide);
 }
 
 void mouseEvent(int button, int state, int x, int y)
 {
-	if (button == 1 && state == 0) {  // zoom in
-			if(angle >= 10)
-				angle -= 5;
+	std::cout << "mouse event - state: " << state << std::endl;
+	if(state==1)
+	{
+		// Salva os parâmetros atuais
+		x_ini = x;
+		y_ini = y;
+		obsX_ini = obsX;
+		obsY_ini = obsY;
+		obsZ_ini = obsZ;
+		rotX_ini = rotX;
+		rotY_ini = rotY;
+		bot = button;
 	}
+	else
+		bot = -1;
+
+	// if (button == 1 && state == 0) {  // zoom in
+	// 		if(angle >= 10)
+	// 			angle -= 5;
+	// }
 	
-	if (button == 3 && state == 0) { // zoom out
-			if(angle <= 130)
-				angle += 5;
-	}
+	// if (button == 3 && state == 0) { // zoom out
+	// 		if(angle <= 130)
+	// 			angle += 5;
+	// }
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 
 	// VISUALIZAÇÃO 3D
-	//gluPerspective(angle, fAspect,0.5,500);
+	gluPerspective(angle, fAspect, 0.1, 1200);
 	// glOrtho(-win, win, -win, win, -200.0, 200.0);
 	// glMatrixMode(GL_MODELVIEW);
 	// glLoadIdentity();
 	// gluLookAt(0+deslocamentoX,0+deslocamentoY,150+deslocamentoZ,0+deslocamentoX,0+deslocamentoY,0+deslocamentoZ, 0,1,0);
-	if(w <= h)
-	{
-		gluOrtho2D(-win + deslocamentoX, win + deslocamentoX, -win * h / w + deslocamentoY, win * h / w + deslocamentoY);
-	}
-	else
-	{
-		gluOrtho2D(-win * w / h + deslocamentoX, win * w / h + deslocamentoX, -win + deslocamentoY, win + deslocamentoY);
-	}
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	// Posiciona e orienta o observador
+	glTranslatef(-obsX,-obsY,-obsZ);
+	glRotatef(rotX,1,0,0);
+	glRotatef(rotY,0,1,0);
+	// if(w <= h)
+	// {
+	// 	gluOrtho2D(-win + deslocamentoX, win + deslocamentoX, -win * h / w + deslocamentoY, win * h / w + deslocamentoY);
+	// }
+	// else
+	// {
+	// 	gluOrtho2D(-win * w / h + deslocamentoX, win * w / h + deslocamentoX, -win + deslocamentoY, win + deslocamentoY);
+	// }
 }
+
+#define SENS_ROT	5.0
+#define SENS_OBS	15.0
+#define SENS_TRANSL	30.0
 
 void mouseMotionEvent(int x, int y)
 {
+	// Botão esquerdo ?
+	if(bot==1)
+	{
+		// Calcula diferenças
+		int deltax = x_ini - x;
+		int deltay = y_ini - y;
+		// E modifica ângulos
+		rotY = rotY_ini - deltax/SENS_ROT;
+		rotX = rotX_ini - deltay/SENS_ROT;
+	}
+	// Botão direito ?
+	else if(bot==3)
+	{
+		// Calcula diferença
+		int deltaz = y_ini - y;
+		// E modifica distância do observador
+		obsZ = obsZ_ini + deltaz/SENS_OBS;
+	}
+	// Botão do meio ?
+	else if(bot==2)
+	{
+		// Calcula diferenças
+		int deltax = x_ini - x;
+		int deltay = y_ini - y;
+		// E modifica posições
+		obsX = obsX_ini + deltax/SENS_TRANSL;
+		obsY = obsY_ini - deltay/SENS_TRANSL;
+	}
+
+		glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+
+	// VISUALIZAÇÃO 3D
+	gluPerspective(angle, fAspect, 0.1, 1200);
+	glMatrixMode(GL_MODELVIEW);
+
+	glLoadIdentity();
+	glTranslatef(-obsX,-obsY,-obsZ);
+	glRotatef(rotX,1,0,0);
+	glRotatef(rotY,0,1,0);
 }
 
 void keyboardEvent(unsigned char key, int state)
 {
 	if(key == '1' && state == 0)
 	{
-		deslocamentoY += 2;	
+		// deslocamentoY += 2;	
+		if(angle>=10)  angle -=5;
+							
 	}
 
 	if(key == '2' && state == 0)
 	{
-		deslocamentoY -= 2;	
+		if(angle<=150) angle +=5;
+							
+		// deslocamentoY -= 2;	
 	}
 
-	if(key == '3' && state == 0)
-	{
-		deslocamentoX -= 2;	
-	}
+	// if(key == '3' && state == 0)
+	// {
+	// 	deslocamentoX -= 2;	
+	// }
 
-	if(key == '4' && state == 0)
-	{
-		deslocamentoX += 2;	
-	}
+	// if(key == '4' && state == 0)
+	// {
+	// 	deslocamentoX += 2;	
+	// }
 
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
+	// glMatrixMode(GL_PROJECTION);
+	// glLoadIdentity();
 
-	// VISUALIZAÇÃO 3D
-	// gluPerspective(angle, fAspect,0.5,500);
-	// glOrtho(-win, win, -win, win, -200.0, 200.0);
+	// // VISUALIZAÇÃO 3D
+	// gluPerspective(angle, fAspect, 0.1, 1200);
+	// // glOrtho(-win, win, -win, win, -200.0, 200.0);
 	// glMatrixMode(GL_MODELVIEW);
 	// glLoadIdentity();
 	// gluLookAt(0+deslocamentoX,0+deslocamentoY,150+deslocamentoZ,0+deslocamentoX,0+deslocamentoY,0+deslocamentoZ, 0,1,0);
 
 	// VISUALIZAÇÃO 2D
-	if(w <= h)
-	{
-		gluOrtho2D(-win + deslocamentoX, win + deslocamentoX, -win * h / w + deslocamentoY, win * h / w + deslocamentoY);
-	}
-	else
-	{
-		gluOrtho2D(-win * w / h + deslocamentoX, win * w / h + deslocamentoX, -win + deslocamentoY, win + deslocamentoY);
-	}
+	// if(w <= h)
+	// {
+	// 	gluOrtho2D(-win + deslocamentoX, win + deslocamentoX, -win * h / w + deslocamentoY, win * h / w + deslocamentoY);
+	// }
+	// else
+	// {
+	// 	gluOrtho2D(-win * w / h + deslocamentoX, win * w / h + deslocamentoX, -win + deslocamentoY, win + deslocamentoY);
+	// }
+	// glMatrixMode(GL_PROJECTION);
+	// // Inicializa sistema de coordenadas de projeção
+	// glLoadIdentity();
+
+	// // Especifica a projeção perspectiva(angulo,aspecto,zMin,zMax)
+	// gluPerspective(angle,fAspect,0.1,1200);
+	// 	glMatrixMode(GL_MODELVIEW);
+	// // Inicializa sistema de coordenadas do modelo
+	// glLoadIdentity();
+	// // Posiciona e orienta o observador
+	// glTranslatef(-obsX,-obsY,-obsZ);
+	// glRotatef(rotX,1,0,0);
+	// glRotatef(rotY,0,1,0);
+			glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+
+	// VISUALIZAÇÃO 3D
+	gluPerspective(angle, fAspect, 0.1, 1200);
+	glMatrixMode(GL_MODELVIEW);
+
+	glLoadIdentity();
+	glTranslatef(-obsX,-obsY,-obsZ);
+	glRotatef(rotX,1,0,0);
+	glRotatef(rotY,0,1,0);
 }
 
 void keyboardSpecialEvent(unsigned char key, int state)
@@ -307,12 +447,21 @@ void resizeWindowEvent(int width, int height)
 	glLoadIdentity();
 
 	// VISUALIZAÇÃO 3D
-	// fAspect = (GLfloat)width / (GLfloat)height;
-	// gluPerspective(angle, fAspect,0.5,500);
+	fAspect = (GLfloat)width / (GLfloat)height;
+	gluPerspective(angle, fAspect, 0.1, 1200);
 	// glOrtho(-win, win, -win, win, -200.0, 200.0);
+	
 	// glMatrixMode(GL_MODELVIEW);
 	// glLoadIdentity();
 	// gluLookAt(0+deslocamentoX,0+deslocamentoY,150+deslocamentoZ,0+deslocamentoX,0+deslocamentoY,0+deslocamentoZ, 0,1,0);
+
+	glMatrixMode(GL_MODELVIEW);
+	// Inicializa sistema de coordenadas do modelo
+	glLoadIdentity();
+	// Posiciona e orienta o observador
+	glTranslatef(-obsX,-obsY,-obsZ);
+	glRotatef(rotX,1,0,0);
+	glRotatef(rotY,0,1,0);
 
 	// VISUALIZAÇÃO 2D
 	// if(width <= height)
@@ -324,7 +473,7 @@ void resizeWindowEvent(int width, int height)
 	// 	gluOrtho2D(-win * width / height + deslocamentoX, win * width / height + deslocamentoX, -win + deslocamentoY, win + deslocamentoY);
 	// }
 
-	gluOrtho2D(0, width, 0, height);
+	// gluOrtho2D(0, width, 0, height);
 
 }
 
@@ -342,6 +491,15 @@ void initGL()
 	deslocamentoX = 0.0f;
 	deslocamentoY = 0.0f;
 	deslocamentoZ = 0.0f;
+
+		angle=60;
+ 
+	// Inicializa as variáveis usadas para alterar a posição do 
+	// observador virtual
+	rotX = 0;
+	rotY = 0;
+	obsX = obsY = 0;
+	obsZ = 5;
 }
 
 int createWindow(int width, int height, int x, int y)
@@ -765,4 +923,19 @@ LRESULT CALLBACK windowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 	}
 
 	return DefWindowProc(hWnd, uMsg, wParam, lParam);
+}
+
+void drawOBJ(OBJ *obj)
+{
+	// Percorre todas as faces
+	for(int f=0; f < obj->total_faces; ++f)
+	{
+		glBegin(GL_LINE_LOOP);
+		// Percorre todos os vértices da face
+		for(int v=0; v < obj->faces[f].total; ++v)
+			glVertex3f(obj->vertices[faces[f].ind[v]].x,
+				obj->vertices[faces[f].ind[v]].y,
+				obj->vertices[faces[f].ind[v]].z);
+	}
+	glEnd();
 }
