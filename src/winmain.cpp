@@ -38,6 +38,16 @@ int h;
 
 DIB test;
 
+int prec = 10;
+
+// Pontos de controle
+GLfloat pontos[4][4][3] = {
+	{{0.0, 0.0, 0.0}, {0.3, 0.5, 0.0}, {0.7, 0.5, 0.0}, {1.0, 0.0, 0.0}},
+	{{0.0, 0.0, 0.3}, {0.3, 0.5, 0.3}, {0.7, 0.5, 0.3}, {1.0, 0.0, 0.3}},
+	{{0.0, 0.0, 0.7}, {0.3, 0.5, 0.7}, {0.7, 0.5, 0.7}, {1.0, 0.0, 0.7}},
+	{{0.0, 0.0, 1.0}, {0.3, 0.5, 1.0}, {0.7, 0.5, 1.0}, {1.0, 0.0, 1.0}}
+};
+
 typedef struct {
 	float x,y,z;	// posição no espaço
 } VERT;
@@ -101,7 +111,7 @@ void initGL();
 // ----------------------------------------------------------------------------
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
-	test.loadFile("assets/24bpp_test.bmp");
+	test.loadFile("assets/24bpp_test.bmp", true);
 	// char path[200]="-Djava.class.path=src;lib\\camunda-bpmn-model-7.13.0-alpha3.jar;lib\\camunda-xml-model-7.13.0-alpha3.jar;";
 
 	// JavaVM *jvm;
@@ -238,26 +248,63 @@ GLubyte img[400 * 400 * 3] = {0};
 // ----------------------------------------------------------------------------
 void frameEvent()
 {
-	// Limpa a janela de visualização com a cor  
+	// // Limpa a janela de visualização com a cor  
+	// // de fundo definida previamente
+	// glClear(GL_COLOR_BUFFER_BIT);
+
+	// // Altera a cor do desenho para preto
+	// glColor3f(1.0f, 0.0f, 0.0f);
+
+	// // Ajusta a posição inicial de desenho do bitmap
+	// // glRasterPos2i(0, 0);
+
+	// // Desenha 10 cópias
+	// // for(int i=0;i<10;++i)
+	// // 	//glBitmap(16, 16, 0.0, 0.0, 16.0, 16.0, bitmap);
+	
+	// //glBitmap(test.getWidth(), test.getHeight(), 0.0, 0.0, test.getWidth(), test.getHeight(), test.getColorIndex());
+	// // glDrawPixels(test.getWidth(), test.getHeight(), GL_RGB, GL_UNSIGNED_BYTE, test.getColorIndex());
+	// // glRasterPos2i(100, 100);
+	// // glCopyPixels(0, 0, 400, 400, GL_COLOR);
+
+	// drawOBJ(&piramide);
+
+		// Limpa a janela de visualização com a cor  
 	// de fundo definida previamente
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	// Altera a cor do desenho para preto
+	glColor3f(0.0f, 0.0f, 0.0f);
+
+	// Calcula incremento de acordo com o total
+	// de pontos intermediários
+	float delta = 1.0/(float)prec;
+
+	// Traça a superfície
+	for(float j=0; j<=1.01; j+=delta)
+	{
+		glBegin(GL_LINE_STRIP);
+		for(float i=0; i<=1.01; i+=delta)
+			glEvalCoord2f(i,j);
+		glEnd();
+		glBegin(GL_LINE_STRIP);
+		for(float i=0; i<=1.01; i+=delta)
+			glEvalCoord2f(j,i);
+		glEnd();
+	}
+	
+	// Muda a cor para vermelho
 	glColor3f(1.0f, 0.0f, 0.0f);
 
-	// Ajusta a posição inicial de desenho do bitmap
-	// glRasterPos2i(0, 0);
+	// Define tamanho de um ponto
+	glPointSize(5.0);
 
-	// Desenha 10 cópias
-	// for(int i=0;i<10;++i)
-	// 	//glBitmap(16, 16, 0.0, 0.0, 16.0, 16.0, bitmap);
-	
-	//glBitmap(test.getWidth(), test.getHeight(), 0.0, 0.0, test.getWidth(), test.getHeight(), test.getColorIndex());
-	// glDrawPixels(test.getWidth(), test.getHeight(), GL_RGB, GL_UNSIGNED_BYTE, test.getColorIndex());
-	// glRasterPos2i(100, 100);
-	// glCopyPixels(0, 0, 400, 400, GL_COLOR);
-
-	drawOBJ(&piramide);
+	// Desenha os pontos de controle
+	glBegin(GL_POINTS);
+	for(int i=0; i<4; ++i)
+		for(int j=0; j<4; ++j)
+			glVertex3fv(pontos[i][j]);
+	glEnd();
 }
 
 void mouseEvent(int button, int state, int x, int y)
@@ -377,15 +424,17 @@ void keyboardEvent(unsigned char key, int state)
 		// deslocamentoY -= 2;	
 	}
 
-	// if(key == '3' && state == 0)
-	// {
-	// 	deslocamentoX -= 2;	
-	// }
+	if(key == '3' && state == 0)
+	{
+		if(prec>2) prec--;
+		// deslocamentoX -= 2;	
+	}
 
-	// if(key == '4' && state == 0)
-	// {
-	// 	deslocamentoX += 2;	
-	// }
+	if(key == '4' && state == 0)
+	{
+		prec++;
+		// deslocamentoX += 2;	
+	}
 
 	// glMatrixMode(GL_PROJECTION);
 	// glLoadIdentity();
@@ -500,6 +549,10 @@ void initGL()
 	rotY = 0;
 	obsX = obsY = 0;
 	obsZ = 5;
+
+	glMap2f(GL_MAP2_VERTEX_3, 0, 1, 3, 4, 0, 1, 12, 4, &pontos[0][0][0]);
+	// Ativa geração de coordenadas
+	glEnable(GL_MAP2_VERTEX_3);
 }
 
 int createWindow(int width, int height, int x, int y)
