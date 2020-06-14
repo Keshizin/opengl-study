@@ -1,4 +1,6 @@
 #include <windows.h>
+#include <mmsystem.h>
+
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <wglext.h>
@@ -106,11 +108,82 @@ void resizeWindowEvent(int width, int height);
 
 void initGL();
 
+void CheckJoystick()
+{
+	// if (m_uiJoystickID == JOYSTICKID1)
+	// {
+		JOYINFO jiInfo;
+		//JOYSTATE jsJoystickState = 0;
+
+		if (joyGetPos(JOYSTICKID1, &jiInfo) == JOYERR_NOERROR)
+		{
+			// Check horizontal movement
+			// if(jiInfo.wXpos < 32767)
+			// 	std::cout << "@debug | CheckJoystick | HORIZONTAL: " << jiInfo.wXpos << std::endl;
+	
+			// // Check vertical movement
+			// if(jiInfo.wYpos < 32767)
+			// 	std::cout << "@debug | CheckJoystick | VERTICAL: " << jiInfo.wYpos << std::endl;
+
+			// std::cout << "@debug | CheckJoystick | Z-AXIS: " << jiInfo.wZpos << std::endl;
+
+			// Check buttons
+			if(jiInfo.wButtons & JOY_BUTTON1)
+				// jsJoystickState |= JOY_FIRE1;
+				std::cout << "@debug | CheckJoystick | JOY_FIRE1" << std::endl;
+
+			if(jiInfo.wButtons & JOY_BUTTON2)
+				// jsJoystickState |= JOY_FIRE2;
+				std::cout << "@debug | CheckJoystick | JOY_FIRE2" << std::endl;
+
+			if(jiInfo.wButtons & JOY_BUTTON3)
+				// jsJoystickState |= JOY_FIRE2;
+				std::cout << "@debug | CheckJoystick | JOY_FIRE3" << std::endl;
+
+			if(jiInfo.wButtons & JOY_BUTTON4)
+				// jsJoystickState |= JOY_FIRE2;
+				std::cout << "@debug | CheckJoystick | JOY_FIRE4" << std::endl;
+		}
+
+		// Allow the game to handle the joystick
+		// HandleJoystick(jsJoystickState);
+	// }
+}
+
 // ----------------------------------------------------------------------------
 //  MAIN FUNCTION
 // ----------------------------------------------------------------------------
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
+	UINT uiNumJoysticks = joyGetNumDevs();
+
+	JOYINFO jiInfo;
+
+	MMRESULT r = joyGetPos(JOYSTICKID1, &jiInfo);
+
+	if(r == MMSYSERR_NODRIVER)
+	{
+		std::cout << "@debug | MMSYSERR_NODRIVER: " << r << std::endl; 
+	}
+	else if(r == MMSYSERR_INVALPARAM)
+	{
+		std::cout << "@debug | MMSYSERR_INVALPARAM: " << r << std::endl; 
+	}
+	else if(r == JOYERR_UNPLUGGED)
+	{
+		std::cout << "@debug | JOYERR_UNPLUGGED: " << r << std::endl; 
+	}
+
+	UINT m_uiJoystickID = JOYSTICKID1;
+
+	JOYCAPS jcCaps;
+	joyGetDevCaps(m_uiJoystickID, &jcCaps, sizeof(JOYCAPS));
+
+	std::cout << "@debug | wXmin: " << jcCaps.wXmin << std::endl; 
+	std::cout << "@debug | wXmax: " << jcCaps.wXmax << std::endl; 
+	std::cout << "@debug | wYmin: " << jcCaps.wYmin << std::endl; 
+	std::cout << "@debug | wYmax: " << jcCaps.wYmax << std::endl; 
+
 	test.loadFile("assets/24bpp_test.bmp", true);
 	// char path[200]="-Djava.class.path=src;lib\\camunda-bpmn-model-7.13.0-alpha3.jar;lib\\camunda-xml-model-7.13.0-alpha3.jar;";
 
@@ -171,6 +244,33 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	ret = ShowWindow(hWindow, SW_SHOW);
 	std::cout << "> show window: " << ret << std::endl;
 
+	r = joySetCapture(hWindow, m_uiJoystickID, 0, TRUE);
+
+	if(r == JOYERR_NOERROR)
+	{
+		std::cout << "@debug | controller connected: " << std::endl; 
+	}
+	else if(r == MMSYSERR_NODRIVER)
+	{
+		std::cout << "@debug | MMSYSERR_NODRIVER: " << r << std::endl; 
+	}
+	else if(r == MMSYSERR_INVALPARAM)
+	{
+		std::cout << "@debug | MMSYSERR_INVALPARAM: " << r << std::endl; 
+	}
+	else if(r == JOYERR_NOCANDO)
+	{
+		std::cout << "@debug | JOYERR_NOCANDO: " << r << std::endl; 
+	}
+	else if(r == JOYERR_UNPLUGGED)
+	{
+		std::cout << "@debug | JOYERR_UNPLUGGED: " << r << std::endl; 
+	}
+	else if(r == JOYERR_PARMS)
+	{
+		std::cout << "@debug | JOYERR_PARMS: " << r << std::endl; 
+	}
+
 	MSG msg;
 	bool isDone = false;
 
@@ -216,6 +316,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		// --------------------------------------------------------------------
 		// RENDERING STUFF HERE
 		// --------------------------------------------------------------------
+		CheckJoystick();
+
 		frameEvent();
 		SwapBuffers(hDC);
 
