@@ -18,6 +18,9 @@
 // ----------------------------------------------------------------------------
 //  SYMBOLIC CONSTANTS
 // ----------------------------------------------------------------------------
+#define CONTEXT_2D 1
+#define CONTEXT_3D 2
+
 #define MOUSE_BUTTON_LEFT   1
 #define MOUSE_BUTTON_MIDDLE 2
 #define MOUSE_BUTTON_RIGHT  3
@@ -25,71 +28,81 @@
 // ----------------------------------------------------------------------------
 //  GLOBAL VARIABLES
 // ----------------------------------------------------------------------------
+int global_rendering_context = CONTEXT_2D;
+
+int global_window_width  = 640;
+int global_window_height = 480;
+
+int global_world_left   = 10;
+int global_world_right  = 10;
+int global_world_top    = 10;
+int global_world_bottom = 10;
+
 HGLRC hRC = NULL;
 HWND hWindow = NULL;
 HDC hDC = NULL;
 
-GLfloat angle, fAspect;
-GLfloat rotX, rotY, rotX_ini, rotY_ini;
-GLfloat obsX, obsY, obsZ, obsX_ini, obsY_ini, obsZ_ini;
-int x_ini,y_ini,bot;
-GLfloat deslocamentoX, deslocamentoY, deslocamentoZ;
-GLfloat win;
-int w;
-int h;
+// GLfloat angle, fAspect;
+// GLfloat rotX, rotY, rotX_ini, rotY_ini;
+// GLfloat obsX, obsY, obsZ, obsX_ini, obsY_ini, obsZ_ini;
+// int x_ini,y_ini,bot;
+// GLfloat deslocamentoX, deslocamentoY, deslocamentoZ;
+// GLfloat win;
+// int w;
+// int h;
 
-DIB test;
+// DIB test;
 
-int prec = 10;
+// int prec = 10;
 
-// Pontos de controle
-GLfloat pontos[4][4][3] = {
-	{{0.0, 0.0, 0.0}, {0.3, 0.5, 0.0}, {0.7, 0.5, 0.0}, {1.0, 0.0, 0.0}},
-	{{0.0, 0.0, 0.3}, {0.3, 0.5, 0.3}, {0.7, 0.5, 0.3}, {1.0, 0.0, 0.3}},
-	{{0.0, 0.0, 0.7}, {0.3, 0.5, 0.7}, {0.7, 0.5, 0.7}, {1.0, 0.0, 0.7}},
-	{{0.0, 0.0, 1.0}, {0.3, 0.5, 1.0}, {0.7, 0.5, 1.0}, {1.0, 0.0, 1.0}}
-};
+// // Pontos de controle
+// GLfloat pontos[4][4][3] = {
+// 	{{0.0, 0.0, 0.0}, {0.3, 0.5, 0.0}, {0.7, 0.5, 0.0}, {1.0, 0.0, 0.0}},
+// 	{{0.0, 0.0, 0.3}, {0.3, 0.5, 0.3}, {0.7, 0.5, 0.3}, {1.0, 0.0, 0.3}},
+// 	{{0.0, 0.0, 0.7}, {0.3, 0.5, 0.7}, {0.7, 0.5, 0.7}, {1.0, 0.0, 0.7}},
+// 	{{0.0, 0.0, 1.0}, {0.3, 0.5, 1.0}, {0.7, 0.5, 1.0}, {1.0, 0.0, 1.0}}
+// };
 
-typedef struct {
-	float x,y,z;	// posição no espaço
-} VERT;
+// typedef struct {
+// 	float x,y,z;	// posição no espaço
+// } VERT;
 
-// Define uma face
-typedef struct {
-	int total;	// total de vértices
-	int ind[4];	// índices para o vetor de vértices
-} FACE;
+// // Define uma face
+// typedef struct {
+// 	int total;	// total de vértices
+// 	int ind[4];	// índices para o vetor de vértices
+// } FACE;
 
-// Define um objeto 3D
-typedef struct {
-	VERT *vertices;		// aponta para os vértices
-	FACE *faces;		// aponta para as faces
-	int total_faces;	// total de faces no objeto
-} OBJ;
+// // Define um objeto 3D
+// typedef struct {
+// 	VERT *vertices;		// aponta para os vértices
+// 	FACE *faces;		// aponta para as faces
+// 	int total_faces;	// total de faces no objeto
+// } OBJ;
 
-// Definição dos vértices
-VERT vertices[] = {
-	{ -1, 0, -1 },	// 0 canto inf esquerdo tras.
-	{  1, 0, -1 },	// 1 canfo inf direito  tras.
-	{  1, 0,  1 },	// 2 canto inf direito  diant.
-	{ -1, 0,  1 },  // 3 canto inf esquerdo diant.
-	{  0, 2,  0 },  // 4 topo
-};
+// // Definição dos vértices
+// VERT vertices[] = {
+// 	{ -1, 0, -1 },	// 0 canto inf esquerdo tras.
+// 	{  1, 0, -1 },	// 1 canfo inf direito  tras.
+// 	{  1, 0,  1 },	// 2 canto inf direito  diant.
+// 	{ -1, 0,  1 },  // 3 canto inf esquerdo diant.
+// 	{  0, 2,  0 },  // 4 topo
+// };
 
-// Definição das faces
-FACE faces[] = {
-	{ 4, { 0,1,2,3 }},	// base
-	{ 3, { 0,1,4,-1 }},	// lado traseiro
-	{ 3, { 0,3,4,-1 }},	// lado esquerdo
-	{ 3, { 1,2,4,-1 }},	// lado direito
-	{ 3, { 3,2,4,-1 }}	// lado dianteiro
-};
+// // Definição das faces
+// FACE faces[] = {
+// 	{ 4, { 0,1,2,3 }},	// base
+// 	{ 3, { 0,1,4,-1 }},	// lado traseiro
+// 	{ 3, { 0,3,4,-1 }},	// lado esquerdo
+// 	{ 3, { 1,2,4,-1 }},	// lado direito
+// 	{ 3, { 3,2,4,-1 }}	// lado dianteiro
+// };
 
-// Finalmente, define o objeto pirâmide
-OBJ piramide = {
-	vertices, faces, 5 };
+// // Finalmente, define o objeto pirâmide
+// OBJ piramide = {
+// 	vertices, faces, 5 };
 
-void drawOBJ(OBJ *obj);
+// void drawOBJ(OBJ *obj);
 
 // ----------------------------------------------------------------------------
 //  FUNCTION PROTOTYPE DECLARATION
@@ -105,18 +118,19 @@ void mouseMotionEvent(int x, int y);
 void keyboardEvent(unsigned char key, int state);
 void keyboardSpecialEvent(unsigned char key, int state);
 void resizeWindowEvent(int width, int height);
-
 void initGL();
+
+void setProjection();
 
 void CheckJoystick()
 {
 	// if (m_uiJoystickID == JOYSTICKID1)
 	// {
-		JOYINFO jiInfo;
+		// JOYINFO jiInfo;
 		//JOYSTATE jsJoystickState = 0;
 
-		if (joyGetPos(JOYSTICKID1, &jiInfo) == JOYERR_NOERROR)
-		{
+		// if (joyGetPos(JOYSTICKID1, &jiInfo) == JOYERR_NOERROR)
+		// {
 			// Check horizontal movement
 			// if(jiInfo.wXpos < 32767)
 			// 	std::cout << "@debug | CheckJoystick | HORIZONTAL: " << jiInfo.wXpos << std::endl;
@@ -128,22 +142,22 @@ void CheckJoystick()
 			// std::cout << "@debug | CheckJoystick | Z-AXIS: " << jiInfo.wZpos << std::endl;
 
 			// Check buttons
-			if(jiInfo.wButtons & JOY_BUTTON1)
-				// jsJoystickState |= JOY_FIRE1;
-				std::cout << "@debug | CheckJoystick | JOY_FIRE1" << std::endl;
+		// 	if(jiInfo.wButtons & JOY_BUTTON1)
+		// 		// jsJoystickState |= JOY_FIRE1;
+		// 		std::cout << "@debug | CheckJoystick | JOY_FIRE1" << std::endl;
 
-			if(jiInfo.wButtons & JOY_BUTTON2)
-				// jsJoystickState |= JOY_FIRE2;
-				std::cout << "@debug | CheckJoystick | JOY_FIRE2" << std::endl;
+		// 	if(jiInfo.wButtons & JOY_BUTTON2)
+		// 		// jsJoystickState |= JOY_FIRE2;
+		// 		std::cout << "@debug | CheckJoystick | JOY_FIRE2" << std::endl;
 
-			if(jiInfo.wButtons & JOY_BUTTON3)
-				// jsJoystickState |= JOY_FIRE2;
-				std::cout << "@debug | CheckJoystick | JOY_FIRE3" << std::endl;
+		// 	if(jiInfo.wButtons & JOY_BUTTON3)
+		// 		// jsJoystickState |= JOY_FIRE2;
+		// 		std::cout << "@debug | CheckJoystick | JOY_FIRE3" << std::endl;
 
-			if(jiInfo.wButtons & JOY_BUTTON4)
-				// jsJoystickState |= JOY_FIRE2;
-				std::cout << "@debug | CheckJoystick | JOY_FIRE4" << std::endl;
-		}
+		// 	if(jiInfo.wButtons & JOY_BUTTON4)
+		// 		// jsJoystickState |= JOY_FIRE2;
+		// 		std::cout << "@debug | CheckJoystick | JOY_FIRE4" << std::endl;
+		// }
 
 		// Allow the game to handle the joystick
 		// HandleJoystick(jsJoystickState);
@@ -155,36 +169,36 @@ void CheckJoystick()
 // ----------------------------------------------------------------------------
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
-	UINT uiNumJoysticks = joyGetNumDevs();
+	// UINT uiNumJoysticks = joyGetNumDevs();
 
-	JOYINFO jiInfo;
+	// JOYINFO jiInfo;
 
-	MMRESULT r = joyGetPos(JOYSTICKID1, &jiInfo);
+	// MMRESULT r = joyGetPos(JOYSTICKID1, &jiInfo);
 
-	if(r == MMSYSERR_NODRIVER)
-	{
-		std::cout << "@debug | MMSYSERR_NODRIVER: " << r << std::endl; 
-	}
-	else if(r == MMSYSERR_INVALPARAM)
-	{
-		std::cout << "@debug | MMSYSERR_INVALPARAM: " << r << std::endl; 
-	}
-	else if(r == JOYERR_UNPLUGGED)
-	{
-		std::cout << "@debug | JOYERR_UNPLUGGED: " << r << std::endl; 
-	}
+	// if(r == MMSYSERR_NODRIVER)
+	// {
+	// 	std::cout << "@debug | MMSYSERR_NODRIVER: " << r << std::endl; 
+	// }
+	// else if(r == MMSYSERR_INVALPARAM)
+	// {
+	// 	std::cout << "@debug | MMSYSERR_INVALPARAM: " << r << std::endl; 
+	// }
+	// else if(r == JOYERR_UNPLUGGED)
+	// {
+	// 	std::cout << "@debug | JOYERR_UNPLUGGED: " << r << std::endl; 
+	// }
 
-	UINT m_uiJoystickID = JOYSTICKID1;
+	// UINT m_uiJoystickID = JOYSTICKID1;
 
-	JOYCAPS jcCaps;
-	joyGetDevCaps(m_uiJoystickID, &jcCaps, sizeof(JOYCAPS));
+	// JOYCAPS jcCaps;
+	// joyGetDevCaps(m_uiJoystickID, &jcCaps, sizeof(JOYCAPS));
 
-	std::cout << "@debug | wXmin: " << jcCaps.wXmin << std::endl; 
-	std::cout << "@debug | wXmax: " << jcCaps.wXmax << std::endl; 
-	std::cout << "@debug | wYmin: " << jcCaps.wYmin << std::endl; 
-	std::cout << "@debug | wYmax: " << jcCaps.wYmax << std::endl; 
+	// std::cout << "@debug | wXmin: " << jcCaps.wXmin << std::endl; 
+	// std::cout << "@debug | wXmax: " << jcCaps.wXmax << std::endl; 
+	// std::cout << "@debug | wYmin: " << jcCaps.wYmin << std::endl; 
+	// std::cout << "@debug | wYmax: " << jcCaps.wYmax << std::endl; 
 
-	test.loadFile("assets/24bpp_test.bmp", true);
+	// test.loadFile("assets/24bpp_test.bmp", true);
 	// char path[200]="-Djava.class.path=src;lib\\camunda-bpmn-model-7.13.0-alpha3.jar;lib\\camunda-xml-model-7.13.0-alpha3.jar;";
 
 	// JavaVM *jvm;
@@ -237,39 +251,37 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	std::cout << "> Welcome to OpenGL Application" << std::endl;
 
-	//ret = createWindow(450, 450, 5, 5);
-	ret = createWindow(1016, 800, 5, 5);
+	ret = createWindow(global_window_width, global_window_height, 5, 5);
 	std::cout << "> window created: " << ret << std::endl;
-
 	ret = ShowWindow(hWindow, SW_SHOW);
 	std::cout << "> show window: " << ret << std::endl;
 
-	r = joySetCapture(hWindow, m_uiJoystickID, 0, TRUE);
+	// r = joySetCapture(hWindow, m_uiJoystickID, 0, TRUE);
 
-	if(r == JOYERR_NOERROR)
-	{
-		std::cout << "@debug | controller connected: " << std::endl; 
-	}
-	else if(r == MMSYSERR_NODRIVER)
-	{
-		std::cout << "@debug | MMSYSERR_NODRIVER: " << r << std::endl; 
-	}
-	else if(r == MMSYSERR_INVALPARAM)
-	{
-		std::cout << "@debug | MMSYSERR_INVALPARAM: " << r << std::endl; 
-	}
-	else if(r == JOYERR_NOCANDO)
-	{
-		std::cout << "@debug | JOYERR_NOCANDO: " << r << std::endl; 
-	}
-	else if(r == JOYERR_UNPLUGGED)
-	{
-		std::cout << "@debug | JOYERR_UNPLUGGED: " << r << std::endl; 
-	}
-	else if(r == JOYERR_PARMS)
-	{
-		std::cout << "@debug | JOYERR_PARMS: " << r << std::endl; 
-	}
+	// if(r == JOYERR_NOERROR)
+	// {
+	// 	std::cout << "@debug | controller connected: " << std::endl; 
+	// }
+	// else if(r == MMSYSERR_NODRIVER)
+	// {
+	// 	std::cout << "@debug | MMSYSERR_NODRIVER: " << r << std::endl; 
+	// }
+	// else if(r == MMSYSERR_INVALPARAM)
+	// {
+	// 	std::cout << "@debug | MMSYSERR_INVALPARAM: " << r << std::endl; 
+	// }
+	// else if(r == JOYERR_NOCANDO)
+	// {
+	// 	std::cout << "@debug | JOYERR_NOCANDO: " << r << std::endl; 
+	// }
+	// else if(r == JOYERR_UNPLUGGED)
+	// {
+	// 	std::cout << "@debug | JOYERR_UNPLUGGED: " << r << std::endl; 
+	// }
+	// else if(r == JOYERR_PARMS)
+	// {
+	// 	std::cout << "@debug | JOYERR_PARMS: " << r << std::endl; 
+	// }
 
 	MSG msg;
 	bool isDone = false;
@@ -350,12 +362,14 @@ GLubyte img[400 * 400 * 3] = {0};
 // ----------------------------------------------------------------------------
 void frameEvent()
 {
-	// // Limpa a janela de visualização com a cor  
-	// // de fundo definida previamente
-	// glClear(GL_COLOR_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT);
+	glColor3f(0.0f, 0.0f, 0.0f);
+	glBegin(GL_TRIANGLES);
+	glVertex3f(0.0f, 0.0f, 0.0f);
+	glVertex3f(10.0f, 0.0f, 0.0f);
+	glVertex3f(0.0f, 10.0f, 0.0f);
+	glEnd();
 
-	// // Altera a cor do desenho para preto
-	// glColor3f(1.0f, 0.0f, 0.0f);
 
 	// // Ajusta a posição inicial de desenho do bitmap
 	// // glRasterPos2i(0, 0);
@@ -373,85 +387,85 @@ void frameEvent()
 
 		// Limpa a janela de visualização com a cor  
 	// de fundo definida previamente
-	glClear(GL_COLOR_BUFFER_BIT);
+	// glClear(GL_COLOR_BUFFER_BIT);
 
 	// Altera a cor do desenho para preto
-	glColor3f(0.0f, 0.0f, 0.0f);
+	// glColor3f(0.0f, 0.0f, 0.0f);
 
 	// Calcula incremento de acordo com o total
 	// de pontos intermediários
-	float delta = 1.0/(float)prec;
+	// float delta = 1.0/(float)prec;
 
 	// Traça a superfície
-	for(float j=0; j<=1.01; j+=delta)
-	{
-		glBegin(GL_LINE_STRIP);
-		for(float i=0; i<=1.01; i+=delta)
-			glEvalCoord2f(i,j);
-		glEnd();
-		glBegin(GL_LINE_STRIP);
-		for(float i=0; i<=1.01; i+=delta)
-			glEvalCoord2f(j,i);
-		glEnd();
-	}
+	// for(float j=0; j<=1.01; j+=delta)
+	// {
+	// 	glBegin(GL_LINE_STRIP);
+	// 	for(float i=0; i<=1.01; i+=delta)
+	// 		glEvalCoord2f(i,j);
+	// 	glEnd();
+	// 	glBegin(GL_LINE_STRIP);
+	// 	for(float i=0; i<=1.01; i+=delta)
+	// 		glEvalCoord2f(j,i);
+	// 	glEnd();
+	// }
 	
 	// Muda a cor para vermelho
-	glColor3f(1.0f, 0.0f, 0.0f);
+	// glColor3f(1.0f, 0.0f, 0.0f);
 
 	// Define tamanho de um ponto
-	glPointSize(5.0);
+	// glPointSize(5.0);
 
 	// Desenha os pontos de controle
-	glBegin(GL_POINTS);
-	for(int i=0; i<4; ++i)
-		for(int j=0; j<4; ++j)
-			glVertex3fv(pontos[i][j]);
-	glEnd();
+	// glBegin(GL_POINTS);
+	// for(int i=0; i<4; ++i)
+	// 	for(int j=0; j<4; ++j)
+	// 		glVertex3fv(pontos[i][j]);
+	// glEnd();
 }
 
 void mouseEvent(int button, int state, int x, int y)
 {
-	std::cout << "mouse event - state: " << state << std::endl;
-	if(state==1)
-	{
-		// Salva os parâmetros atuais
-		x_ini = x;
-		y_ini = y;
-		obsX_ini = obsX;
-		obsY_ini = obsY;
-		obsZ_ini = obsZ;
-		rotX_ini = rotX;
-		rotY_ini = rotY;
-		bot = button;
-	}
-	else
-		bot = -1;
-
-	// if (button == 1 && state == 0) {  // zoom in
-	// 		if(angle >= 10)
-	// 			angle -= 5;
+	// std::cout << "mouse event - state: " << state << std::endl;
+	// if(state==1)
+	// {
+	// 	// Salva os parâmetros atuais
+	// 	x_ini = x;
+	// 	y_ini = y;
+	// 	obsX_ini = obsX;
+	// 	obsY_ini = obsY;
+	// 	obsZ_ini = obsZ;
+	// 	rotX_ini = rotX;
+	// 	rotY_ini = rotY;
+	// 	bot = button;
 	// }
+	// else
+	// 	bot = -1;
+
+	// // if (button == 1 && state == 0) {  // zoom in
+	// // 		if(angle >= 10)
+	// // 			angle -= 5;
+	// // }
 	
-	// if (button == 3 && state == 0) { // zoom out
-	// 		if(angle <= 130)
-	// 			angle += 5;
-	// }
+	// // if (button == 3 && state == 0) { // zoom out
+	// // 		if(angle <= 130)
+	// // 			angle += 5;
+	// // }
 
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
+	// glMatrixMode(GL_PROJECTION);
+	// glLoadIdentity();
 
-	// VISUALIZAÇÃO 3D
-	gluPerspective(angle, fAspect, 0.1, 1200);
-	// glOrtho(-win, win, -win, win, -200.0, 200.0);
+	// // VISUALIZAÇÃO 3D
+	// gluPerspective(angle, fAspect, 0.1, 1200);
+	// // glOrtho(-win, win, -win, win, -200.0, 200.0);
+	// // glMatrixMode(GL_MODELVIEW);
+	// // glLoadIdentity();
+	// // gluLookAt(0+deslocamentoX,0+deslocamentoY,150+deslocamentoZ,0+deslocamentoX,0+deslocamentoY,0+deslocamentoZ, 0,1,0);
 	// glMatrixMode(GL_MODELVIEW);
 	// glLoadIdentity();
-	// gluLookAt(0+deslocamentoX,0+deslocamentoY,150+deslocamentoZ,0+deslocamentoX,0+deslocamentoY,0+deslocamentoZ, 0,1,0);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	// Posiciona e orienta o observador
-	glTranslatef(-obsX,-obsY,-obsZ);
-	glRotatef(rotX,1,0,0);
-	glRotatef(rotY,0,1,0);
+	// // Posiciona e orienta o observador
+	// glTranslatef(-obsX,-obsY,-obsZ);
+	// glRotatef(rotX,1,0,0);
+	// glRotatef(rotY,0,1,0);
 	// if(w <= h)
 	// {
 	// 	gluOrtho2D(-win + deslocamentoX, win + deslocamentoX, -win * h / w + deslocamentoY, win * h / w + deslocamentoY);
@@ -468,75 +482,75 @@ void mouseEvent(int button, int state, int x, int y)
 
 void mouseMotionEvent(int x, int y)
 {
-	// Botão esquerdo ?
-	if(bot==1)
-	{
-		// Calcula diferenças
-		int deltax = x_ini - x;
-		int deltay = y_ini - y;
-		// E modifica ângulos
-		rotY = rotY_ini - deltax/SENS_ROT;
-		rotX = rotX_ini - deltay/SENS_ROT;
-	}
-	// Botão direito ?
-	else if(bot==3)
-	{
-		// Calcula diferença
-		int deltaz = y_ini - y;
-		// E modifica distância do observador
-		obsZ = obsZ_ini + deltaz/SENS_OBS;
-	}
-	// Botão do meio ?
-	else if(bot==2)
-	{
-		// Calcula diferenças
-		int deltax = x_ini - x;
-		int deltay = y_ini - y;
-		// E modifica posições
-		obsX = obsX_ini + deltax/SENS_TRANSL;
-		obsY = obsY_ini - deltay/SENS_TRANSL;
-	}
+	// // Botão esquerdo ?
+	// if(bot==1)
+	// {
+	// 	// Calcula diferenças
+	// 	int deltax = x_ini - x;
+	// 	int deltay = y_ini - y;
+	// 	// E modifica ângulos
+	// 	rotY = rotY_ini - deltax/SENS_ROT;
+	// 	rotX = rotX_ini - deltay/SENS_ROT;
+	// }
+	// // Botão direito ?
+	// else if(bot==3)
+	// {
+	// 	// Calcula diferença
+	// 	int deltaz = y_ini - y;
+	// 	// E modifica distância do observador
+	// 	obsZ = obsZ_ini + deltaz/SENS_OBS;
+	// }
+	// // Botão do meio ?
+	// else if(bot==2)
+	// {
+	// 	// Calcula diferenças
+	// 	int deltax = x_ini - x;
+	// 	int deltay = y_ini - y;
+	// 	// E modifica posições
+	// 	obsX = obsX_ini + deltax/SENS_TRANSL;
+	// 	obsY = obsY_ini - deltay/SENS_TRANSL;
+	// }
 
-		glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
+	// 	glMatrixMode(GL_PROJECTION);
+	// glLoadIdentity();
 
-	// VISUALIZAÇÃO 3D
-	gluPerspective(angle, fAspect, 0.1, 1200);
-	glMatrixMode(GL_MODELVIEW);
+	// // VISUALIZAÇÃO 3D
+	// gluPerspective(angle, fAspect, 0.1, 1200);
+	// glMatrixMode(GL_MODELVIEW);
 
-	glLoadIdentity();
-	glTranslatef(-obsX,-obsY,-obsZ);
-	glRotatef(rotX,1,0,0);
-	glRotatef(rotY,0,1,0);
+	// glLoadIdentity();
+	// glTranslatef(-obsX,-obsY,-obsZ);
+	// glRotatef(rotX,1,0,0);
+	// glRotatef(rotY,0,1,0);
 }
 
 void keyboardEvent(unsigned char key, int state)
 {
-	if(key == '1' && state == 0)
-	{
-		// deslocamentoY += 2;	
-		if(angle>=10)  angle -=5;
+	// if(key == '1' && state == 0)
+	// {
+	// 	// deslocamentoY += 2;	
+	// 	if(angle>=10)  angle -=5;
 							
-	}
+	// }
 
-	if(key == '2' && state == 0)
-	{
-		if(angle<=150) angle +=5;
+	// if(key == '2' && state == 0)
+	// {
+	// 	if(angle<=150) angle +=5;
 							
-		// deslocamentoY -= 2;	
-	}
+	// 	// deslocamentoY -= 2;	
+	// }
 
-	if(key == '3' && state == 0)
-	{
-		if(prec>2) prec--;
-		// deslocamentoX -= 2;	
-	}
+	// if(key == '3' && state == 0)
+	// {
+	// 	if(prec>2) prec--;
+	// 	// deslocamentoX -= 2;	
+	// }
 
-	if(key == '4' && state == 0)
-	{
-		prec++;
-		// deslocamentoX += 2;	
-	}
+	// if(key == '4' && state == 0)
+	// {
+	// 	prec++;
+	// 	// deslocamentoX += 2;	
+	// }
 
 	// glMatrixMode(GL_PROJECTION);
 	// glLoadIdentity();
@@ -570,17 +584,17 @@ void keyboardEvent(unsigned char key, int state)
 	// glTranslatef(-obsX,-obsY,-obsZ);
 	// glRotatef(rotX,1,0,0);
 	// glRotatef(rotY,0,1,0);
-			glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
+	// glMatrixMode(GL_PROJECTION);
+	// glLoadIdentity();
 
-	// VISUALIZAÇÃO 3D
-	gluPerspective(angle, fAspect, 0.1, 1200);
-	glMatrixMode(GL_MODELVIEW);
+	// // VISUALIZAÇÃO 3D
+	// gluPerspective(angle, fAspect, 0.1, 1200);
+	// glMatrixMode(GL_MODELVIEW);
 
-	glLoadIdentity();
-	glTranslatef(-obsX,-obsY,-obsZ);
-	glRotatef(rotX,1,0,0);
-	glRotatef(rotY,0,1,0);
+	// glLoadIdentity();
+	// glTranslatef(-obsX,-obsY,-obsZ);
+	// glRotatef(rotX,1,0,0);
+	// glRotatef(rotY,0,1,0);
 }
 
 void keyboardSpecialEvent(unsigned char key, int state)
@@ -589,30 +603,34 @@ void keyboardSpecialEvent(unsigned char key, int state)
 
 void resizeWindowEvent(int width, int height)
 {
-	w = width;
-	h = height;
+	global_window_width = width;
+	global_window_height = height;
+	setProjection();
 
-	glViewport(0, 0, width, height);
+	// w = width;
+	// h = height;
 
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
+	// glViewport(0, 0, width, height);
+
+	// glMatrixMode(GL_PROJECTION);
+	// glLoadIdentity();
 
 	// VISUALIZAÇÃO 3D
-	fAspect = (GLfloat)width / (GLfloat)height;
-	gluPerspective(angle, fAspect, 0.1, 1200);
+	// fAspect = (GLfloat)width / (GLfloat)height;
+	// gluPerspective(angle, fAspect, 0.1, 1200);
 	// glOrtho(-win, win, -win, win, -200.0, 200.0);
 	
 	// glMatrixMode(GL_MODELVIEW);
 	// glLoadIdentity();
 	// gluLookAt(0+deslocamentoX,0+deslocamentoY,150+deslocamentoZ,0+deslocamentoX,0+deslocamentoY,0+deslocamentoZ, 0,1,0);
 
-	glMatrixMode(GL_MODELVIEW);
+	// glMatrixMode(GL_MODELVIEW);
 	// Inicializa sistema de coordenadas do modelo
-	glLoadIdentity();
+	// glLoadIdentity();
 	// Posiciona e orienta o observador
-	glTranslatef(-obsX,-obsY,-obsZ);
-	glRotatef(rotX,1,0,0);
-	glRotatef(rotY,0,1,0);
+	// glTranslatef(-obsX,-obsY,-obsZ);
+	// glRotatef(rotX,1,0,0);
+	// glRotatef(rotY,0,1,0);
 
 	// VISUALIZAÇÃO 2D
 	// if(width <= height)
@@ -625,36 +643,35 @@ void resizeWindowEvent(int width, int height)
 	// }
 
 	// gluOrtho2D(0, width, 0, height);
-
 }
 
 void initGL()
 {
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-	win = 5.0f;
-	glPixelStorei (GL_UNPACK_ALIGNMENT, 4);
-	// glPixelStorei (GL_UNPACK_SWAP_BYTES, GL_TRUE);
+	// win = 5.0f;
+	// glPixelStorei (GL_UNPACK_ALIGNMENT, 4);
+	// // glPixelStorei (GL_UNPACK_SWAP_BYTES, GL_TRUE);
 
-	angle=45;
+	// angle=45;
 
-	// Inicializa as variáveis utilizadas para implementação
-	// da operação de pan
-	deslocamentoX = 0.0f;
-	deslocamentoY = 0.0f;
-	deslocamentoZ = 0.0f;
+	// // Inicializa as variáveis utilizadas para implementação
+	// // da operação de pan
+	// deslocamentoX = 0.0f;
+	// deslocamentoY = 0.0f;
+	// deslocamentoZ = 0.0f;
 
-		angle=60;
+	// 	angle=60;
  
-	// Inicializa as variáveis usadas para alterar a posição do 
-	// observador virtual
-	rotX = 0;
-	rotY = 0;
-	obsX = obsY = 0;
-	obsZ = 5;
+	// // Inicializa as variáveis usadas para alterar a posição do 
+	// // observador virtual
+	// rotX = 0;
+	// rotY = 0;
+	// obsX = obsY = 0;
+	// obsZ = 5;
 
-	glMap2f(GL_MAP2_VERTEX_3, 0, 1, 3, 4, 0, 1, 12, 4, &pontos[0][0][0]);
-	// Ativa geração de coordenadas
-	glEnable(GL_MAP2_VERTEX_3);
+	// glMap2f(GL_MAP2_VERTEX_3, 0, 1, 3, 4, 0, 1, 12, 4, &pontos[0][0][0]);
+	// // Ativa geração de coordenadas
+	// glEnable(GL_MAP2_VERTEX_3);
 }
 
 int createWindow(int width, int height, int x, int y)
@@ -1080,17 +1097,33 @@ LRESULT CALLBACK windowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 	return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
 
-void drawOBJ(OBJ *obj)
+// void drawOBJ(OBJ *obj)
+// {
+// 	// Percorre todas as faces
+// 	for(int f=0; f < obj->total_faces; ++f)
+// 	{
+// 		glBegin(GL_LINE_LOOP);
+// 		// Percorre todos os vértices da face
+// 		for(int v=0; v < obj->faces[f].total; ++v)
+// 			glVertex3f(obj->vertices[faces[f].ind[v]].x,
+// 				obj->vertices[faces[f].ind[v]].y,
+// 				obj->vertices[faces[f].ind[v]].z);
+// 	}
+// 	glEnd();
+// }
+
+void setProjection()
 {
-	// Percorre todas as faces
-	for(int f=0; f < obj->total_faces; ++f)
+	glLoadIdentity();
+	glMatrixMode(GL_PROJECTION);
+
+	if(global_rendering_context == CONTEXT_2D)
 	{
-		glBegin(GL_LINE_LOOP);
-		// Percorre todos os vértices da face
-		for(int v=0; v < obj->faces[f].total; ++v)
-			glVertex3f(obj->vertices[faces[f].ind[v]].x,
-				obj->vertices[faces[f].ind[v]].y,
-				obj->vertices[faces[f].ind[v]].z);
+		//gluOrtho2D(-win + deslocamentoX, win + deslocamentoX, -win * height / width + deslocamentoY, win * height / width + deslocamentoY);
+		gluOrtho2D(-global_world_left, global_world_right, -global_world_bottom, global_world_top);
 	}
-	glEnd();
+	else if(global_rendering_context == CONTEXT_3D)
+	{
+
+	}
 }
