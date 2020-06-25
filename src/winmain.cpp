@@ -30,13 +30,17 @@
 // ----------------------------------------------------------------------------
 int global_rendering_context = CONTEXT_2D;
 
-int global_window_width  = 640;
+int global_window_width  = 1000;
 int global_window_height = 480;
 
-int global_world_left   = 10;
-int global_world_right  = 10;
-int global_world_top    = 10;
-int global_world_bottom = 10;
+GLdouble global_world_left   = 10;
+GLdouble global_world_right  = 10;
+GLdouble global_world_top    = 10;
+GLdouble global_world_bottom = 10;
+
+GLdouble global_aspect_correction;
+
+bool isAspectCorrection = false;
 
 HGLRC hRC = NULL;
 HWND hWindow = NULL;
@@ -337,7 +341,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		
 		if(timer >= frequency.QuadPart)
 		{
-			std::cout << "> FPS: " << fps << std::endl;
+			// std::cout << "> FPS: " << fps << std::endl;
 			fps = 0;
 			timer = 0;
 		}
@@ -526,6 +530,10 @@ void mouseMotionEvent(int x, int y)
 
 void keyboardEvent(unsigned char key, int state)
 {
+	if(key == '0' && state == 0)
+	{
+		isAspectCorrection = !isAspectCorrection;
+	}
 	// if(key == '1' && state == 0)
 	// {
 	// 	// deslocamentoY += 2;	
@@ -605,6 +613,31 @@ void resizeWindowEvent(int width, int height)
 {
 	global_window_width = width;
 	global_window_height = height;
+
+	if(isAspectCorrection)
+	{
+		std::cout << "@debug | aspect correction activated!" << std::endl;
+		if(width <= height)
+		{
+			global_aspect_correction = GLdouble(height) / GLdouble(width);
+			global_world_bottom *= global_aspect_correction;
+			global_world_top *= global_aspect_correction;
+		}
+		else
+		{
+			global_aspect_correction = GLdouble(width) / GLdouble(height);
+			global_world_left *= global_aspect_correction;
+			global_world_right *= global_aspect_correction;
+		} 
+	}
+
+	std::cout << "global aspect correction: " << global_aspect_correction << std::endl;
+	std::cout << "  global word left: " << global_world_left << std::endl;
+	std::cout << " global word right: " << global_world_right << std::endl;
+	std::cout << "global word bottom: " << global_world_bottom << std::endl;
+	std::cout << "   global word top: " << global_world_top << std::endl;
+
+	glViewport(0, 0, width, height);
 	setProjection();
 
 	// w = width;
