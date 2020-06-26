@@ -1,3 +1,11 @@
+// TesteOpenGL1.cpp
+// PrimeiroPrograma.cpp
+// ExemploGLUT.cpp
+// ExemploComVariaveisDeEstado.cpp (CORREÇÃO DE ASPECTO 2D)
+// Casa.cpp
+// DuasViewports.cpp
+// Exemplo3D.cpp
+
 #include <windows.h>
 #include <mmsystem.h>
 
@@ -30,7 +38,7 @@
 // ----------------------------------------------------------------------------
 int global_rendering_context = CONTEXT_2D;
 
-int global_window_width  = 1000;
+int global_window_width  = 640;
 int global_window_height = 480;
 
 GLdouble global_world_left   = -10;
@@ -45,6 +53,7 @@ bool global_aspect_correction_state = false;
 HGLRC hRC = NULL;
 HWND hWindow = NULL;
 HDC hDC = NULL;
+LARGE_INTEGER frequency;
 
 // GLfloat angle;
 // GLfloat rotX, rotY, rotX_ini, rotY_ini;
@@ -116,7 +125,7 @@ LRESULT CALLBACK windowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 int createWindow(int width, int height, int x, int y);
 int destroyWindow();
 
-void frameEvent();
+void frameEvent(unsigned long long frameTime);
 void mouseEvent(int button, int state, int x, int y);
 void mouseMotionEvent(int x, int y);
 void keyboardEvent(unsigned char key, int state);
@@ -293,7 +302,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	LARGE_INTEGER frameTime;
 	LARGE_INTEGER startTime;
 	LARGE_INTEGER endTime;
-	LARGE_INTEGER frequency;
 	unsigned long long timer = 0;
 	unsigned long long fps = 0;
 
@@ -329,12 +337,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
+
 		// --------------------------------------------------------------------
 		// RENDERING STUFF HERE
 		// --------------------------------------------------------------------
 		CheckJoystick();
-
-		frameEvent();
+		frameEvent(frameTime.QuadPart);
 		SwapBuffers(hDC);
 
 		QueryPerformanceFrequency(&frequency);
@@ -359,20 +367,38 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	return 0;
 }
 
-GLubyte img[400 * 400 * 3] = {0};
+// GLubyte img[400 * 400 * 3] = {0};
 
 // ----------------------------------------------------------------------------
 //  FUNCTION DEFINITION
 // ----------------------------------------------------------------------------
-void frameEvent()
+void frameEvent(unsigned long long frameTime)
 {
 	glClear(GL_COLOR_BUFFER_BIT);
-	glColor3f(0.0f, 0.0f, 0.0f);
+
+	glLoadIdentity();
+	glMatrixMode(GL_MODELVIEW);
+	gluLookAt(0, 0, -10, 0, 0, 0, 0, 1, 0);
+
+	glColor3f(1.0f, 0.0f, 0.0f);
+	
 	glBegin(GL_TRIANGLES);
-	glVertex3f(0.0f, 0.0f, 0.0f);
-	glVertex3f(10.0f, 0.0f, 0.0f);
-	glVertex3f(0.0f, 10.0f, 0.0f);
+	glVertex3f( 0.0f,  5.0f, 0.0f);
+	glVertex3f( 5.0f, -5.0f, 5.0f);
+	glVertex3f(-5.0f, -5.0f, 5.0f);
+
+	// glVertex3f(-9.0f,  9.0f, 0.0f);
+	// glVertex3f( 9.0f, -9.0f, 0.0f);
+	// glVertex3f(-9.0f, -9.0f, 0.0f);
+
+	// glVertex3f(-9.0f,  9.0f, 0.0f);
+	// glVertex3f( 9.0f,  9.0f, 0.0f);
+	// glVertex3f( 9.0f, -9.0f, 0.0f);
+	// glVertex3f(-9.0f,  9.0f, 0.0f);
+	// glVertex3f( 9.0f, -9.0f, 0.0f);
+	// glVertex3f(-9.0f, -9.0f, 0.0f);
 	glEnd();
+
 
 
 	// // Ajusta a posição inicial de desenho do bitmap
@@ -522,12 +548,26 @@ void mouseMotionEvent(int x, int y)
 
 void keyboardEvent(unsigned char key, int state)
 {
-	if(key == '0' && state == 0)
+	if(key == '0' && state == 1)
 	{
 		std::cout << "@DEBUG | ACTIVE ASPECT CORRENTION!" << std::endl;
 		global_aspect_correction_state = !global_aspect_correction_state;
 		setProjection();
 	}
+
+	if(key == '9' && state == 1)
+	{
+		std::cout << "@DEBUG | ACTIVE ASPECT CORRENTION!" << std::endl;
+
+		if(global_rendering_context == CONTEXT_2D)
+			global_rendering_context = CONTEXT_3D;
+		else
+			global_rendering_context = CONTEXT_2D;
+
+		setProjection();
+	}
+
+
 	// if(key == '1' && state == 0)
 	// {
 	// 	// deslocamentoY += 2;	
@@ -597,14 +637,6 @@ void resizeWindowEvent(int width, int height)
 
 	glViewport(0, 0, global_window_width, global_window_height);
 	setProjection();
-
-	// w = width;
-	// h = height;
-
-	// glViewport(0, 0, width, height);
-
-	// glMatrixMode(GL_PROJECTION);
-	// glLoadIdentity();
 
 	// VISUALIZAÇÃO 3D
 	// fAspect = (GLfloat)width / (GLfloat)height;
@@ -1119,17 +1151,21 @@ void setProjection()
 			}
 		}
 
-		std::cout << "global aspect correction: " << global_aspect_correction << std::endl;
-		std::cout << "global word left: " << left << std::endl;
-		std::cout << "global word right: " << right << std::endl;
-		std::cout << "global word bottom: " << bottom << std::endl;
-		std::cout << "global word top: " << top << std::endl;
+		std::cout << "(2D) global aspect correction: " << global_aspect_correction << std::endl;
+		std::cout << "(2D) global word left: " << left << std::endl;
+		std::cout << "(2D) global word right: " << right << std::endl;
+		std::cout << "(2D) global word bottom: " << bottom << std::endl;
+		std::cout << "(2D) global word top: " << top << std::endl;
 
 		//gluOrtho2D(-win + deslocamentoX, win + deslocamentoX, -win * height / width + deslocamentoY, win * height / width + deslocamentoY);
 		gluOrtho2D(left, right, bottom, top);
 	}
 	else if(global_rendering_context == CONTEXT_3D)
 	{
+		global_aspect_correction = GLdouble(global_window_width) / GLdouble(global_window_height);
 
+		std::cout << "(3D) global aspect correction: " << global_aspect_correction << std::endl;
+
+		gluPerspective(60, global_aspect_correction, 1, 20);
 	}
 }
