@@ -33,20 +33,20 @@ int global_rendering_context = CONTEXT_2D;
 int global_window_width  = 1000;
 int global_window_height = 480;
 
-GLdouble global_world_left   = 10;
+GLdouble global_world_left   = -10;
 GLdouble global_world_right  = 10;
 GLdouble global_world_top    = 10;
-GLdouble global_world_bottom = 10;
+GLdouble global_world_bottom = -10;
 
 GLdouble global_aspect_correction;
 
-bool isAspectCorrection = false;
+bool global_aspect_correction_state = false;
 
 HGLRC hRC = NULL;
 HWND hWindow = NULL;
 HDC hDC = NULL;
 
-// GLfloat angle, fAspect;
+// GLfloat angle;
 // GLfloat rotX, rotY, rotX_ini, rotY_ini;
 // GLfloat obsX, obsY, obsZ, obsX_ini, obsY_ini, obsZ_ini;
 // int x_ini,y_ini,bot;
@@ -235,7 +235,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	// 	return 0;
 	// }
 
- //    jmethodID methodId = env->GetStaticMethodID(jcls, "startBPMNParser", "()V");
+	 //    jmethodID methodId = env->GetStaticMethodID(jcls, "startBPMNParser", "()V");
 
 	// if(methodId == NULL)
 	// 	std::cout << "(!) ERROR Method is not found!" << std::endl;
@@ -470,14 +470,6 @@ void mouseEvent(int button, int state, int x, int y)
 	// glTranslatef(-obsX,-obsY,-obsZ);
 	// glRotatef(rotX,1,0,0);
 	// glRotatef(rotY,0,1,0);
-	// if(w <= h)
-	// {
-	// 	gluOrtho2D(-win + deslocamentoX, win + deslocamentoX, -win * h / w + deslocamentoY, win * h / w + deslocamentoY);
-	// }
-	// else
-	// {
-	// 	gluOrtho2D(-win * w / h + deslocamentoX, win * w / h + deslocamentoX, -win + deslocamentoY, win + deslocamentoY);
-	// }
 }
 
 #define SENS_ROT	5.0
@@ -532,7 +524,9 @@ void keyboardEvent(unsigned char key, int state)
 {
 	if(key == '0' && state == 0)
 	{
-		isAspectCorrection = !isAspectCorrection;
+		std::cout << "@DEBUG | ACTIVE ASPECT CORRENTION!" << std::endl;
+		global_aspect_correction_state = !global_aspect_correction_state;
+		setProjection();
 	}
 	// if(key == '1' && state == 0)
 	// {
@@ -570,19 +564,6 @@ void keyboardEvent(unsigned char key, int state)
 	// glLoadIdentity();
 	// gluLookAt(0+deslocamentoX,0+deslocamentoY,150+deslocamentoZ,0+deslocamentoX,0+deslocamentoY,0+deslocamentoZ, 0,1,0);
 
-	// VISUALIZAÇÃO 2D
-	// if(w <= h)
-	// {
-	// 	gluOrtho2D(-win + deslocamentoX, win + deslocamentoX, -win * h / w + deslocamentoY, win * h / w + deslocamentoY);
-	// }
-	// else
-	// {
-	// 	gluOrtho2D(-win * w / h + deslocamentoX, win * w / h + deslocamentoX, -win + deslocamentoY, win + deslocamentoY);
-	// }
-	// glMatrixMode(GL_PROJECTION);
-	// // Inicializa sistema de coordenadas de projeção
-	// glLoadIdentity();
-
 	// // Especifica a projeção perspectiva(angulo,aspecto,zMin,zMax)
 	// gluPerspective(angle,fAspect,0.1,1200);
 	// 	glMatrixMode(GL_MODELVIEW);
@@ -614,30 +595,7 @@ void resizeWindowEvent(int width, int height)
 	global_window_width = width;
 	global_window_height = height;
 
-	if(isAspectCorrection)
-	{
-		std::cout << "@debug | aspect correction activated!" << std::endl;
-		if(width <= height)
-		{
-			global_aspect_correction = GLdouble(height) / GLdouble(width);
-			global_world_bottom *= global_aspect_correction;
-			global_world_top *= global_aspect_correction;
-		}
-		else
-		{
-			global_aspect_correction = GLdouble(width) / GLdouble(height);
-			global_world_left *= global_aspect_correction;
-			global_world_right *= global_aspect_correction;
-		} 
-	}
-
-	std::cout << "global aspect correction: " << global_aspect_correction << std::endl;
-	std::cout << "  global word left: " << global_world_left << std::endl;
-	std::cout << " global word right: " << global_world_right << std::endl;
-	std::cout << "global word bottom: " << global_world_bottom << std::endl;
-	std::cout << "   global word top: " << global_world_top << std::endl;
-
-	glViewport(0, 0, width, height);
+	glViewport(0, 0, global_window_width, global_window_height);
 	setProjection();
 
 	// w = width;
@@ -664,18 +622,6 @@ void resizeWindowEvent(int width, int height)
 	// glTranslatef(-obsX,-obsY,-obsZ);
 	// glRotatef(rotX,1,0,0);
 	// glRotatef(rotY,0,1,0);
-
-	// VISUALIZAÇÃO 2D
-	// if(width <= height)
-	// {
-	// 	gluOrtho2D(-win + deslocamentoX, win + deslocamentoX, -win * height / width + deslocamentoY, win * height / width + deslocamentoY);
-	// }
-	// else
-	// {
-	// 	gluOrtho2D(-win * width / height + deslocamentoX, win * width / height + deslocamentoX, -win + deslocamentoY, win + deslocamentoY);
-	// }
-
-	// gluOrtho2D(0, width, 0, height);
 }
 
 void initGL()
@@ -1152,8 +1098,35 @@ void setProjection()
 
 	if(global_rendering_context == CONTEXT_2D)
 	{
+		GLdouble left = global_world_left;
+		GLdouble right = global_world_right;
+		GLdouble bottom = global_world_bottom;
+		GLdouble top = global_world_top;
+
+		if(global_aspect_correction_state)
+		{
+			if(global_window_width <= global_window_height)
+			{
+				global_aspect_correction = GLdouble(global_window_height) / GLdouble(global_window_width);
+				bottom *= global_aspect_correction;
+				top *= global_aspect_correction;
+			}
+			else
+			{
+				global_aspect_correction = GLdouble(global_window_width) / GLdouble(global_window_height);
+				left *= global_aspect_correction;
+				right *= global_aspect_correction;
+			}
+		}
+
+		std::cout << "global aspect correction: " << global_aspect_correction << std::endl;
+		std::cout << "global word left: " << left << std::endl;
+		std::cout << "global word right: " << right << std::endl;
+		std::cout << "global word bottom: " << bottom << std::endl;
+		std::cout << "global word top: " << top << std::endl;
+
 		//gluOrtho2D(-win + deslocamentoX, win + deslocamentoX, -win * height / width + deslocamentoY, win * height / width + deslocamentoY);
-		gluOrtho2D(-global_world_left, global_world_right, -global_world_bottom, global_world_top);
+		gluOrtho2D(left, right, bottom, top);
 	}
 	else if(global_rendering_context == CONTEXT_3D)
 	{
