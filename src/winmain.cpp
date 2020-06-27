@@ -36,7 +36,7 @@
 // ----------------------------------------------------------------------------
 //  GLOBAL VARIABLES
 // ----------------------------------------------------------------------------
-int global_rendering_context = CONTEXT_2D;
+int global_rendering_context = CONTEXT_3D;
 
 int global_window_width  = 640;
 int global_window_height = 480;
@@ -50,12 +50,16 @@ GLdouble global_aspect_correction;
 
 bool global_aspect_correction_state = false;
 
+GLfloat camZ = 0.0f;
+GLdouble projection_angle = 60.0;
+GLdouble projection_zNear = 1.0;
+GLdouble projection_zFar = 30.0;
+
 HGLRC hRC = NULL;
 HWND hWindow = NULL;
 HDC hDC = NULL;
 LARGE_INTEGER frequency;
 
-// GLfloat angle;
 // GLfloat rotX, rotY, rotX_ini, rotY_ini;
 // GLfloat obsX, obsY, obsZ, obsX_ini, obsY_ini, obsZ_ini;
 // int x_ini,y_ini,bot;
@@ -349,7 +353,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		
 		if(timer >= frequency.QuadPart)
 		{
-			// std::cout << "> FPS: " << fps << std::endl;
+			std::cout << "> FPS: " << fps << std::endl;
 			fps = 0;
 			timer = 0;
 		}
@@ -376,16 +380,35 @@ void frameEvent(unsigned long long frameTime)
 {
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	glLoadIdentity();
 	glMatrixMode(GL_MODELVIEW);
-	gluLookAt(0, 0, -10, 0, 0, 0, 0, 1, 0);
+	glLoadIdentity();
+
+	// VIEWING TRANSFORMATION HERE
+	//gluLookAt(0.0, 0.0, 5.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+	glTranslatef(0.0, 0.0, camZ);
+	
+	// LOCAL MODELING TRANSFORMATION HERE
+	// glTranslatef(5.0, 0.0, 0.0);
+	// glRotatef(45, 0.0, 0.0, 1.0);
+
+	// DRAWING OBJECTS
+	glColor3f(0.0,0.0,0.0);
+	glBegin(GL_LINES);
+	glVertex3f(-10.0, 0.0, 0.0);
+	glVertex3f(10.0, 0.0, 0.0);
+	glVertex3f(0.0, -10.0, 0.0);
+	glVertex3f(0.0, 10.0, 0.0);
+	glEnd();
+
+	// LOCAL MODELING TRANSFORMATION HERE
+	glRotatef(45, 0.0, 0.0, 1.0);
+	glTranslatef(5.0, 0.0, 0.0);
 
 	glColor3f(1.0f, 0.0f, 0.0f);
-	
 	glBegin(GL_TRIANGLES);
 	glVertex3f( 0.0f,  5.0f, 0.0f);
-	glVertex3f( 5.0f, -5.0f, 5.0f);
-	glVertex3f(-5.0f, -5.0f, 5.0f);
+	glVertex3f( 5.0f, -5.0f, 0.0f);
+	glVertex3f(-5.0f, -5.0f, 0.0f);
 
 	// glVertex3f(-9.0f,  9.0f, 0.0f);
 	// glVertex3f( 9.0f, -9.0f, 0.0f);
@@ -565,6 +588,32 @@ void keyboardEvent(unsigned char key, int state)
 			global_rendering_context = CONTEXT_2D;
 
 		setProjection();
+	}
+
+	if(key == '1' && state == 1)
+	{
+		camZ += 0.1f;
+		std::cout << "@DEBUG | CAMERA Z: " << camZ << std::endl;
+	}
+
+	if(key == '2' && state == 1)
+	{
+		camZ -= 0.1f;
+		std::cout << "@DEBUG | CAMERA Z: " << camZ << std::endl;
+	}
+
+	if((key == 'q' || key == 'Q') && state == 1)
+	{
+		projection_angle += 0.1;
+		setProjection();
+		std::cout << "@DEBUG | PROJECTION ANGLE: " << projection_angle << std::endl;
+	}
+
+	if((key == 'w' || key == 'W') && state == 1)
+	{
+		projection_angle -= 0.1;
+		setProjection();
+		std::cout << "@DEBUG | PROJECTION ANGLE: " << projection_angle << std::endl;
 	}
 
 
@@ -1125,8 +1174,8 @@ LRESULT CALLBACK windowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 void setProjection()
 {
-	glLoadIdentity();
 	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
 
 	if(global_rendering_context == CONTEXT_2D)
 	{
@@ -1165,7 +1214,10 @@ void setProjection()
 		global_aspect_correction = GLdouble(global_window_width) / GLdouble(global_window_height);
 
 		std::cout << "(3D) global aspect correction: " << global_aspect_correction << std::endl;
+		std::cout << "(3D) global projection angle: " << projection_angle << std::endl;
+		std::cout << "(3D) global projection zNear: " << projection_zNear << std::endl;
+		std::cout << "(3D) global projection zFar: " << projection_zFar << std::endl;
 
-		gluPerspective(60, global_aspect_correction, 1, 20);
+		gluPerspective(projection_angle, global_aspect_correction, projection_zNear, projection_zFar);
 	}
 }
