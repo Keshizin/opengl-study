@@ -34,7 +34,12 @@
 // Exemplo3DComZoom.cpp
 // Exemplo3DOrtoZoom.cpp
 // CasaComZoomEPan.cpp
-// Exemplo3DComZoomEPan.cpp 
+// Exemplo3DComZoomEPan.cpp
+// ExemploBitmap.cpp
+// ExemploImagem.cpp
+// ExemploImagemCopia.cpp
+// ExemploImagemTransfer.cpp
+// ExemploImagemZoom.cpp
 
 #include <windows.h>
 #include <mmsystem.h>
@@ -50,6 +55,7 @@
 
 #include <eventhandler.h>
 #include <diblib.h>
+#include <obj.h>
 
 // #include <jni.h>
 
@@ -80,10 +86,13 @@ GLdouble global_aspect_correction;
 
 bool global_aspect_correction_state = false;
 
+GLfloat camX = 0.0f;
+GLfloat camY = 0.0f;
 GLfloat camZ = 0.0f;
+
 GLdouble projection_angle = 60.0;
-GLdouble projection_zNear = 1.0;
-GLdouble projection_zFar = 30.0;
+GLdouble projection_zNear = 1;
+GLdouble projection_zFar = 30;
 
 HGLRC hRC = NULL;
 HWND hWindow = NULL;
@@ -110,46 +119,25 @@ LARGE_INTEGER frequency;
 // 	{{0.0, 0.0, 1.0}, {0.3, 0.5, 1.0}, {0.7, 0.5, 1.0}, {1.0, 0.0, 1.0}}
 // };
 
-// typedef struct {
-// 	float x,y,z;	// posição no espaço
-// } VERT;
+VERT vertices[] = {
+	{ -1, 0, -1 },
+	{  1, 0, -1 },
+	{  1, 0,  1 },
+	{ -1, 0,  1 },
+	{  0, 2,  0 },
+};
 
-// // Define uma face
-// typedef struct {
-// 	int total;	// total de vértices
-// 	int ind[4];	// índices para o vetor de vértices
-// } FACE;
+FACE faces[] = {
+	{ 4, { 0,1,2, 3 }},
+	{ 3, { 0,1,4,-1 }},
+	{ 3, { 0,3,4,-1 }},
+	{ 3, { 1,2,4,-1 }},
+	{ 3, { 3,2,4,-1 }}
+};
 
-// // Define um objeto 3D
-// typedef struct {
-// 	VERT *vertices;		// aponta para os vértices
-// 	FACE *faces;		// aponta para as faces
-// 	int total_faces;	// total de faces no objeto
-// } OBJ;
-
-// // Definição dos vértices
-// VERT vertices[] = {
-// 	{ -1, 0, -1 },	// 0 canto inf esquerdo tras.
-// 	{  1, 0, -1 },	// 1 canfo inf direito  tras.
-// 	{  1, 0,  1 },	// 2 canto inf direito  diant.
-// 	{ -1, 0,  1 },  // 3 canto inf esquerdo diant.
-// 	{  0, 2,  0 },  // 4 topo
-// };
-
-// // Definição das faces
-// FACE faces[] = {
-// 	{ 4, { 0,1,2,3 }},	// base
-// 	{ 3, { 0,1,4,-1 }},	// lado traseiro
-// 	{ 3, { 0,3,4,-1 }},	// lado esquerdo
-// 	{ 3, { 1,2,4,-1 }},	// lado direito
-// 	{ 3, { 3,2,4,-1 }}	// lado dianteiro
-// };
-
-// // Finalmente, define o objeto pirâmide
-// OBJ piramide = {
-// 	vertices, faces, 5 };
-
-// void drawOBJ(OBJ *obj);
+OBJ piramide = {
+	vertices, faces, 5
+};
 
 // ----------------------------------------------------------------------------
 //  FUNCTION PROTOTYPE DECLARATION
@@ -413,46 +401,23 @@ void frameEvent(unsigned long long frameTime)
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
+	// ------------------------------------------------------------------------
 	// VIEWING TRANSFORMATION HERE
+	// ------------------------------------------------------------------------
 	//gluLookAt(0.0, 0.0, 5.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
-	glTranslatef(0.0, 0.0, camZ);
+	glTranslatef(camX, camY, camZ);
 	
+	// ------------------------------------------------------------------------
 	// LOCAL MODELING TRANSFORMATION HERE
+	// ------------------------------------------------------------------------
 	// glTranslatef(5.0, 0.0, 0.0);
 	// glRotatef(45, 0.0, 0.0, 1.0);
 
+	// ------------------------------------------------------------------------
 	// DRAWING OBJECTS
-	glColor3f(0.0,0.0,0.0);
-	glBegin(GL_LINES);
-	glVertex3f(-10.0, 0.0, 0.0);
-	glVertex3f(10.0, 0.0, 0.0);
-	glVertex3f(0.0, -10.0, 0.0);
-	glVertex3f(0.0, 10.0, 0.0);
-	glEnd();
-
-	// LOCAL MODELING TRANSFORMATION HERE
-	glRotatef(45, 0.0, 0.0, 1.0);
-	glTranslatef(5.0, 0.0, 0.0);
-
-	glColor3f(1.0f, 0.0f, 0.0f);
-	glBegin(GL_TRIANGLES);
-	glVertex3f( 0.0f,  5.0f, 0.0f);
-	glVertex3f( 5.0f, -5.0f, 0.0f);
-	glVertex3f(-5.0f, -5.0f, 0.0f);
-
-	// glVertex3f(-9.0f,  9.0f, 0.0f);
-	// glVertex3f( 9.0f, -9.0f, 0.0f);
-	// glVertex3f(-9.0f, -9.0f, 0.0f);
-
-	// glVertex3f(-9.0f,  9.0f, 0.0f);
-	// glVertex3f( 9.0f,  9.0f, 0.0f);
-	// glVertex3f( 9.0f, -9.0f, 0.0f);
-	// glVertex3f(-9.0f,  9.0f, 0.0f);
-	// glVertex3f( 9.0f, -9.0f, 0.0f);
-	// glVertex3f(-9.0f, -9.0f, 0.0f);
-	glEnd();
-
-
+	// ------------------------------------------------------------------------
+	glColor3f(0.0f, 0.0, 0.0f);
+	drawOBJ(&piramide);
 
 	// // Ajusta a posição inicial de desenho do bitmap
 	// // glRasterPos2i(0, 0);
@@ -465,15 +430,6 @@ void frameEvent(unsigned long long frameTime)
 	// // glDrawPixels(test.getWidth(), test.getHeight(), GL_RGB, GL_UNSIGNED_BYTE, test.getColorIndex());
 	// // glRasterPos2i(100, 100);
 	// // glCopyPixels(0, 0, 400, 400, GL_COLOR);
-
-	// drawOBJ(&piramide);
-
-		// Limpa a janela de visualização com a cor  
-	// de fundo definida previamente
-	// glClear(GL_COLOR_BUFFER_BIT);
-
-	// Altera a cor do desenho para preto
-	// glColor3f(0.0f, 0.0f, 0.0f);
 
 	// Calcula incremento de acordo com o total
 	// de pontos intermediários
@@ -492,9 +448,6 @@ void frameEvent(unsigned long long frameTime)
 	// 	glEnd();
 	// }
 	
-	// Muda a cor para vermelho
-	// glColor3f(1.0f, 0.0f, 0.0f);
-
 	// Define tamanho de um ponto
 	// glPointSize(5.0);
 
@@ -1186,21 +1139,6 @@ LRESULT CALLBACK windowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 	return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
-
-// void drawOBJ(OBJ *obj)
-// {
-// 	// Percorre todas as faces
-// 	for(int f=0; f < obj->total_faces; ++f)
-// 	{
-// 		glBegin(GL_LINE_LOOP);
-// 		// Percorre todos os vértices da face
-// 		for(int v=0; v < obj->faces[f].total; ++v)
-// 			glVertex3f(obj->vertices[faces[f].ind[v]].x,
-// 				obj->vertices[faces[f].ind[v]].y,
-// 				obj->vertices[faces[f].ind[v]].z);
-// 	}
-// 	glEnd();
-// }
 
 void setProjection()
 {
