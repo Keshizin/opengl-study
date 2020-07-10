@@ -57,8 +57,6 @@
 #include <diblib.h>
 #include <obj.h>
 
-// #include <jni.h>
-
 // ----------------------------------------------------------------------------
 //  SYMBOLIC CONSTANTS
 // ----------------------------------------------------------------------------
@@ -234,54 +232,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	// std::cout << "@debug | wYmax: " << jcCaps.wYmax << std::endl; 
 
 	// test.loadFile("assets/24bpp_test.bmp", true);
-	// char path[200]="-Djava.class.path=src;lib\\camunda-bpmn-model-7.13.0-alpha3.jar;lib\\camunda-xml-model-7.13.0-alpha3.jar;";
-
-	// JavaVM *jvm;
-	// JNIEnv *env;
-	// JavaVMInitArgs vm_args;
-
-	// JavaVMOption jvmopt[1];
-	// jvmopt[0].optionString = path;
-
-	// vm_args.version = JNI_VERSION_1_2;
-	// vm_args.nOptions = 1;
-	// vm_args.options = jvmopt;
-	// vm_args.ignoreUnrecognized = JNI_TRUE;
-
-	// jint rc = JNI_CreateJavaVM(&jvm, (void**)&env, &vm_args);
- 
-	// if (rc != JNI_OK)
-	// {
-	// 	std::cout << "(!) ERROR It was not possible to create JVM." << std::endl;
-	// 	return 0;
-	// }
-
-	// jclass jcls = env->FindClass("BPMNParser");
-
-	// if(jcls == NULL)
-	// {
-	// 	std::cout << "(!) Java class not found." << std::endl;
-	// 	env->ExceptionDescribe();
-	// 	jvm->DestroyJavaVM();
-	// 	return 0;
-	// }
-
-	 //    jmethodID methodId = env->GetStaticMethodID(jcls, "startBPMNParser", "()V");
-
-	// if(methodId == NULL)
-	// 	std::cout << "(!) ERROR Method is not found!" << std::endl;
-	// else
-	// {
-	// 	env->CallStaticVoidMethod(jcls, methodId);
-
-	// 	if (env->ExceptionCheck()) {
-	// 		env->ExceptionDescribe();
-	// 		env->ExceptionClear();
-	// 	}
-	// }
-
-	// jvm->DestroyJavaVM();
-
+	
 	int ret;
 
 	std::cout << "> Welcome to OpenGL Application" << std::endl;
@@ -333,7 +284,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	wglSwapIntervalEXT = (PFNWGLSWAPINTERVALPROC) wglGetProcAddress("wglSwapIntervalEXT");
 
 	if (wglSwapIntervalEXT) {
-	    wglSwapIntervalEXT(0);
+	    wglSwapIntervalEXT(1);
 	}
 
 	initGL();
