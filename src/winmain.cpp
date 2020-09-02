@@ -70,7 +70,7 @@
 // ----------------------------------------------------------------------------
 //  GLOBAL VARIABLES
 // ----------------------------------------------------------------------------
-int global_rendering_context = CONTEXT_3D;
+int global_rendering_context = CONTEXT_2D;
 
 int global_window_width  = 640;
 int global_window_height = 480;
@@ -97,6 +97,11 @@ HWND hWindow = NULL;
 HDC hDC = NULL;
 LARGE_INTEGER frequency;
 
+// ----------------------------------------------------------------------------
+//  APPLICATION GLOBAL VARIABLES
+// ----------------------------------------------------------------------------
+DIB textura;
+
 // GLfloat rotX, rotY, rotX_ini, rotY_ini;
 // GLfloat obsX, obsY, obsZ, obsX_ini, obsY_ini, obsZ_ini;
 // int x_ini,y_ini,bot;
@@ -104,8 +109,6 @@ LARGE_INTEGER frequency;
 // GLfloat win;
 // int w;
 // int h;
-
-// DIB test;
 
 // int prec = 10;
 
@@ -367,20 +370,14 @@ void frameEvent(unsigned long long frameTime)
 	// ------------------------------------------------------------------------
 	// DRAWING OBJECTS
 	// ------------------------------------------------------------------------
-	glColor3f(0.0f, 0.0, 0.0f);
-	drawOBJ(&piramide);
+	// glColor3f(0.0f, 0.0, 0.0f);
+	// drawOBJ(&piramide);
 
-	// // Ajusta a posição inicial de desenho do bitmap
-	// // glRasterPos2i(0, 0);
-
-	// // Desenha 10 cópias
-	// // for(int i=0;i<10;++i)
-	// // 	//glBitmap(16, 16, 0.0, 0.0, 16.0, 16.0, bitmap);
-	
-	// //glBitmap(test.getWidth(), test.getHeight(), 0.0, 0.0, test.getWidth(), test.getHeight(), test.getColorIndex());
-	// // glDrawPixels(test.getWidth(), test.getHeight(), GL_RGB, GL_UNSIGNED_BYTE, test.getColorIndex());
-	// // glRasterPos2i(100, 100);
-	// // glCopyPixels(0, 0, 400, 400, GL_COLOR);
+	// ------------------------------------------------------------------------
+	// DRAWING BITMAPS
+	// ------------------------------------------------------------------------
+	// glBitmap(textura.getWidth(), textura.getHeight(), 0.0, 0.0, textura.getWidth(), textura.getHeight(), textura.getColorIndex());
+	glDrawPixels(textura.getWidth(), textura.getHeight(), GL_RGBA, GL_UNSIGNED_BYTE, textura.getColorIndex());
 
 	// Calcula incremento de acordo com o total
 	// de pontos intermediários
@@ -642,27 +639,24 @@ void resizeWindowEvent(int width, int height)
 void initGL()
 {
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+	glPixelStorei (GL_UNPACK_ALIGNMENT, 4);
+
+	textura.loadFile("assets/player.bmp", true);
+	
 	// win = 5.0f;
-	// glPixelStorei (GL_UNPACK_ALIGNMENT, 4);
-	// // glPixelStorei (GL_UNPACK_SWAP_BYTES, GL_TRUE);
-
 	// angle=45;
-
 	// // Inicializa as variáveis utilizadas para implementação
 	// // da operação de pan
 	// deslocamentoX = 0.0f;
 	// deslocamentoY = 0.0f;
 	// deslocamentoZ = 0.0f;
-
 	// 	angle=60;
- 
 	// // Inicializa as variáveis usadas para alterar a posição do 
 	// // observador virtual
 	// rotX = 0;
 	// rotY = 0;
 	// obsX = obsY = 0;
 	// obsZ = 5;
-
 	// glMap2f(GL_MAP2_VERTEX_3, 0, 1, 3, 4, 0, 1, 12, 4, &pontos[0][0][0]);
 	// // Ativa geração de coordenadas
 	// glEnable(GL_MAP2_VERTEX_3);

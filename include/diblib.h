@@ -71,8 +71,8 @@ namespace DIBLIB
 		void print();
 		void swap();
 
-		DWORD getBfOffBits();
 		DWORD getBfSize();
+		DWORD getBfOffBits();
 
 	private:
 		WORD bfType;

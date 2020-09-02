@@ -7,7 +7,6 @@ typedef struct {
 	float z;
 } VERT;
 
-
 typedef struct {
 	int total;
 	int ind[4];
@@ -30,6 +29,10 @@ void drawOBJ(OBJ *obj)
 		// Percorre todos os vértices da face
 		for(int vertices = 0; vertices < obj->faces[faces].total; ++vertices)
 		{
+			// if(textures) {
+			// 	glTexCoord2f(obj->textures)
+			// }
+
 			glVertex3f(
 				obj->vertices[obj->faces[faces].ind[vertices]].x,
 				obj->vertices[obj->faces[faces].ind[vertices]].y,
