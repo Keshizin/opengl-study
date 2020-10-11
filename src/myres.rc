@@ -1,3 +1,0 @@
-#include <myres.h>
-
-IDI_MYICON ICON "cicon.ico"

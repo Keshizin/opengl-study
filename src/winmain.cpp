@@ -176,19 +176,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	unsigned long long timer = 0;
 	unsigned long long fps = 0;
 
-	// std::cout << "msg: " << wglGetExtensionsStringARB(WGL_EXT_swap_control) << std::endl;
-	// std::cout << "msg: " << glGetString(WGL_EXT_swap_control) << std::endl;
-
-	// PFNGLBINDPROGRAMARBPROC glBindProgramARB;
-	// glBindProgramARB = (PFNGLBINDPROGRAMARBPROC) wglGetProcAddress("wglSwapIntervalEXT");
-
-	// if(glBindProgramARB) {
-	// 	glBindProgramARB(0);
-	// 	std::cout << "OK OK O K" << std::endl;
-	// } else {
-	// 	std::cout << "NOOO O O" << std::endl;
-	// }
-
 	typedef BOOL(APIENTRY *PFNWGLSWAPINTERVALPROC)(int);
 	PFNWGLSWAPINTERVALPROC wglSwapIntervalEXT = NULL;
 
@@ -255,262 +242,39 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 // ----------------------------------------------------------------------------
 //  FUNCTION DEFINITION
 // ----------------------------------------------------------------------------
+void initGL()
+{
+	glClearColor(0.0, 0.0, 0.0, 0.0);
+
+	glOrtho(0.0, 1.0, 0.0, 1.0, -1.0, 1.0);
+}
+
 void frameEvent(unsigned long long frameTime)
 {
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-
-	// ------------------------------------------------------------------------
-	// VIEWING TRANSFORMATION HERE
-	// ------------------------------------------------------------------------
-	//gluLookAt(0.0, 0.0, 5.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
-	glTranslatef(camX, camY, camZ);
+	glColor3f(1.0, 1.0, 1.0);
 	
-	// ------------------------------------------------------------------------
-	// LOCAL MODELING TRANSFORMATION HERE
-	// ------------------------------------------------------------------------
-	// glTranslatef(5.0, 0.0, 0.0);
-	// glRotatef(45, 0.0, 0.0, 1.0);
 
-	// ------------------------------------------------------------------------
-	// DRAWING OBJECTS
-	// ------------------------------------------------------------------------
-	// glColor3f(0.0f, 0.0, 0.0f);
-	// drawOBJ(&piramide);
-
-	// ------------------------------------------------------------------------
-	// DRAWING BITMAPS
-	// ------------------------------------------------------------------------
-	// glBitmap(textura.getWidth(), textura.getHeight(), 0.0, 0.0, textura.getWidth(), textura.getHeight(), textura.getColorIndex());
-	glDrawPixels(textura.getWidth(), textura.getHeight(), GL_RGBA, GL_UNSIGNED_BYTE, textura.getColorIndex());
-
-	// Calcula incremento de acordo com o total
-	// de pontos intermediários
-	// float delta = 1.0/(float)prec;
-
-	// Traça a superfície
-	// for(float j=0; j<=1.01; j+=delta)
-	// {
-	// 	glBegin(GL_LINE_STRIP);
-	// 	for(float i=0; i<=1.01; i+=delta)
-	// 		glEvalCoord2f(i,j);
-	// 	glEnd();
-	// 	glBegin(GL_LINE_STRIP);
-	// 	for(float i=0; i<=1.01; i+=delta)
-	// 		glEvalCoord2f(j,i);
-	// 	glEnd();
-	// }
-	
-	// Define tamanho de um ponto
-	// glPointSize(5.0);
-
-	// Desenha os pontos de controle
-	// glBegin(GL_POINTS);
-	// for(int i=0; i<4; ++i)
-	// 	for(int j=0; j<4; ++j)
-	// 		glVertex3fv(pontos[i][j]);
-	// glEnd();
+	glBegin(GL_POLYGON);
+	glVertex3f(0.25, 0.25, 0.0);
+	glVertex3f(0.75, 0.25, 0.0);
+	glVertex3f(0.75, 0.75, 0.0);
+	glVertex3f(0.25, 0.75, 0.0);
+	glEnd();
+	glFlush();
 }
 
 void mouseEvent(int button, int state, int x, int y)
 {
-	// std::cout << "mouse event - state: " << state << std::endl;
-	// if(state==1)
-	// {
-	// 	// Salva os parâmetros atuais
-	// 	x_ini = x;
-	// 	y_ini = y;
-	// 	obsX_ini = obsX;
-	// 	obsY_ini = obsY;
-	// 	obsZ_ini = obsZ;
-	// 	rotX_ini = rotX;
-	// 	rotY_ini = rotY;
-	// 	bot = button;
-	// }
-	// else
-	// 	bot = -1;
-
-	// // if (button == 1 && state == 0) {  // zoom in
-	// // 		if(angle >= 10)
-	// // 			angle -= 5;
-	// // }
-	
-	// // if (button == 3 && state == 0) { // zoom out
-	// // 		if(angle <= 130)
-	// // 			angle += 5;
-	// // }
-
-	// glMatrixMode(GL_PROJECTION);
-	// glLoadIdentity();
-
-	// // VISUALIZAÇÃO 3D
-	// gluPerspective(angle, fAspect, 0.1, 1200);
-	// // glOrtho(-win, win, -win, win, -200.0, 200.0);
-	// // glMatrixMode(GL_MODELVIEW);
-	// // glLoadIdentity();
-	// // gluLookAt(0+deslocamentoX,0+deslocamentoY,150+deslocamentoZ,0+deslocamentoX,0+deslocamentoY,0+deslocamentoZ, 0,1,0);
-	// glMatrixMode(GL_MODELVIEW);
-	// glLoadIdentity();
-	// // Posiciona e orienta o observador
-	// glTranslatef(-obsX,-obsY,-obsZ);
-	// glRotatef(rotX,1,0,0);
-	// glRotatef(rotY,0,1,0);
 }
-
-#define SENS_ROT	5.0
-#define SENS_OBS	15.0
-#define SENS_TRANSL	30.0
 
 void mouseMotionEvent(int x, int y)
 {
-	// // Botão esquerdo ?
-	// if(bot==1)
-	// {
-	// 	// Calcula diferenças
-	// 	int deltax = x_ini - x;
-	// 	int deltay = y_ini - y;
-	// 	// E modifica ângulos
-	// 	rotY = rotY_ini - deltax/SENS_ROT;
-	// 	rotX = rotX_ini - deltay/SENS_ROT;
-	// }
-	// // Botão direito ?
-	// else if(bot==3)
-	// {
-	// 	// Calcula diferença
-	// 	int deltaz = y_ini - y;
-	// 	// E modifica distância do observador
-	// 	obsZ = obsZ_ini + deltaz/SENS_OBS;
-	// }
-	// // Botão do meio ?
-	// else if(bot==2)
-	// {
-	// 	// Calcula diferenças
-	// 	int deltax = x_ini - x;
-	// 	int deltay = y_ini - y;
-	// 	// E modifica posições
-	// 	obsX = obsX_ini + deltax/SENS_TRANSL;
-	// 	obsY = obsY_ini - deltay/SENS_TRANSL;
-	// }
-
-	// 	glMatrixMode(GL_PROJECTION);
-	// glLoadIdentity();
-
-	// // VISUALIZAÇÃO 3D
-	// gluPerspective(angle, fAspect, 0.1, 1200);
-	// glMatrixMode(GL_MODELVIEW);
-
-	// glLoadIdentity();
-	// glTranslatef(-obsX,-obsY,-obsZ);
-	// glRotatef(rotX,1,0,0);
-	// glRotatef(rotY,0,1,0);
 }
 
 void keyboardEvent(unsigned char key, int state)
 {
-	if(key == '0' && state == 1)
-	{
-		std::cout << "@DEBUG | ACTIVE ASPECT CORRENTION!" << std::endl;
-		global_aspect_correction_state = !global_aspect_correction_state;
-		setProjection();
-	}
-
-	if(key == '9' && state == 1)
-	{
-		std::cout << "@DEBUG | ACTIVE ASPECT CORRENTION!" << std::endl;
-
-		if(global_rendering_context == CONTEXT_2D)
-			global_rendering_context = CONTEXT_3D;
-		else
-			global_rendering_context = CONTEXT_2D;
-
-		setProjection();
-	}
-
-	if(key == '1' && state == 1)
-	{
-		camZ += 0.1f;
-		std::cout << "@DEBUG | CAMERA Z: " << camZ << std::endl;
-	}
-
-	if(key == '2' && state == 1)
-	{
-		camZ -= 0.1f;
-		std::cout << "@DEBUG | CAMERA Z: " << camZ << std::endl;
-	}
-
-	if((key == 'q' || key == 'Q') && state == 1)
-	{
-		projection_angle += 0.1;
-		setProjection();
-		std::cout << "@DEBUG | PROJECTION ANGLE: " << projection_angle << std::endl;
-	}
-
-	if((key == 'w' || key == 'W') && state == 1)
-	{
-		projection_angle -= 0.1;
-		setProjection();
-		std::cout << "@DEBUG | PROJECTION ANGLE: " << projection_angle << std::endl;
-	}
-
-
-	// if(key == '1' && state == 0)
-	// {
-	// 	// deslocamentoY += 2;	
-	// 	if(angle>=10)  angle -=5;
-							
-	// }
-
-	// if(key == '2' && state == 0)
-	// {
-	// 	if(angle<=150) angle +=5;
-							
-	// 	// deslocamentoY -= 2;	
-	// }
-
-	// if(key == '3' && state == 0)
-	// {
-	// 	if(prec>2) prec--;
-	// 	// deslocamentoX -= 2;	
-	// }
-
-	// if(key == '4' && state == 0)
-	// {
-	// 	prec++;
-	// 	// deslocamentoX += 2;	
-	// }
-
-	// glMatrixMode(GL_PROJECTION);
-	// glLoadIdentity();
-
-	// // VISUALIZAÇÃO 3D
-	// gluPerspective(angle, fAspect, 0.1, 1200);
-	// // glOrtho(-win, win, -win, win, -200.0, 200.0);
-	// glMatrixMode(GL_MODELVIEW);
-	// glLoadIdentity();
-	// gluLookAt(0+deslocamentoX,0+deslocamentoY,150+deslocamentoZ,0+deslocamentoX,0+deslocamentoY,0+deslocamentoZ, 0,1,0);
-
-	// // Especifica a projeção perspectiva(angulo,aspecto,zMin,zMax)
-	// gluPerspective(angle,fAspect,0.1,1200);
-	// 	glMatrixMode(GL_MODELVIEW);
-	// // Inicializa sistema de coordenadas do modelo
-	// glLoadIdentity();
-	// // Posiciona e orienta o observador
-	// glTranslatef(-obsX,-obsY,-obsZ);
-	// glRotatef(rotX,1,0,0);
-	// glRotatef(rotY,0,1,0);
-	// glMatrixMode(GL_PROJECTION);
-	// glLoadIdentity();
-
-	// // VISUALIZAÇÃO 3D
-	// gluPerspective(angle, fAspect, 0.1, 1200);
-	// glMatrixMode(GL_MODELVIEW);
-
-	// glLoadIdentity();
-	// glTranslatef(-obsX,-obsY,-obsZ);
-	// glRotatef(rotX,1,0,0);
-	// glRotatef(rotY,0,1,0);
 }
 
 void keyboardSpecialEvent(unsigned char key, int state)
@@ -543,30 +307,54 @@ void resizeWindowEvent(int width, int height)
 	// glRotatef(rotY,0,1,0);
 }
 
-void initGL()
+void setProjection()
 {
-	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-	glPixelStorei (GL_UNPACK_ALIGNMENT, 4);
+	// glMatrixMode(GL_PROJECTION);
+	// glLoadIdentity();
 
-	textura.loadFile("assets/player.bmp", true);
-	
-	// win = 5.0f;
-	// angle=45;
-	// // Inicializa as variáveis utilizadas para implementação
-	// // da operação de pan
-	// deslocamentoX = 0.0f;
-	// deslocamentoY = 0.0f;
-	// deslocamentoZ = 0.0f;
-	// 	angle=60;
-	// // Inicializa as variáveis usadas para alterar a posição do 
-	// // observador virtual
-	// rotX = 0;
-	// rotY = 0;
-	// obsX = obsY = 0;
-	// obsZ = 5;
-	// glMap2f(GL_MAP2_VERTEX_3, 0, 1, 3, 4, 0, 1, 12, 4, &pontos[0][0][0]);
-	// // Ativa geração de coordenadas
-	// glEnable(GL_MAP2_VERTEX_3);
+	// if(global_rendering_context == CONTEXT_2D)
+	// {
+	// 	GLdouble left = global_world_left;
+	// 	GLdouble right = global_world_right;
+	// 	GLdouble bottom = global_world_bottom;
+	// 	GLdouble top = global_world_top;
+
+	// 	if(global_aspect_correction_state)
+	// 	{
+	// 		if(global_window_width <= global_window_height)
+	// 		{
+	// 			global_aspect_correction = GLdouble(global_window_height) / GLdouble(global_window_width);
+	// 			bottom *= global_aspect_correction;
+	// 			top *= global_aspect_correction;
+	// 		}
+	// 		else
+	// 		{
+	// 			global_aspect_correction = GLdouble(global_window_width) / GLdouble(global_window_height);
+	// 			left *= global_aspect_correction;
+	// 			right *= global_aspect_correction;
+	// 		}
+	// 	}
+
+	// 	// std::cout << "(2D) global aspect correction: " << global_aspect_correction << std::endl;
+	// 	// std::cout << "(2D) global word left: " << left << std::endl;
+	// 	// std::cout << "(2D) global word right: " << right << std::endl;
+	// 	// std::cout << "(2D) global word bottom: " << bottom << std::endl;
+	// 	// std::cout << "(2D) global word top: " << top << std::endl;
+
+	// 	//gluOrtho2D(-win + deslocamentoX, win + deslocamentoX, -win * height / width + deslocamentoY, win * height / width + deslocamentoY);
+	// 	gluOrtho2D(left, right, bottom, top);
+	// }
+	// else if(global_rendering_context == CONTEXT_3D)
+	// {
+	// 	global_aspect_correction = GLdouble(global_window_width) / GLdouble(global_window_height);
+
+	// 	// std::cout << "(3D) global aspect correction: " << global_aspect_correction << std::endl;
+	// 	// std::cout << "(3D) global projection angle: " << projection_angle << std::endl;
+	// 	// std::cout << "(3D) global projection zNear: " << projection_zNear << std::endl;
+	// 	// std::cout << "(3D) global projection zFar: " << projection_zFar << std::endl;
+
+	// 	gluPerspective(projection_angle, global_aspect_correction, projection_zNear, projection_zFar);
+	// }
 }
 
 int createWindow(int width, int height, int x, int y)
@@ -906,11 +694,11 @@ LRESULT CALLBACK windowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 		// WINDOW EVENTS
 		// --------------------------------------------------------------------
 		case WM_CREATE:
-			std::cout << "> WM_CREATE message" << std::endl;
+			// std::cout << "> WM_CREATE message" << std::endl;
 			break;
 
 		case WM_DESTROY:
-			std::cout << "> WM_DESTROY message" << std::endl;
+			// std::cout << "> WM_DESTROY message" << std::endl;
 			PostQuitMessage(0);
 			break;
 
@@ -918,21 +706,21 @@ LRESULT CALLBACK windowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 			break;
 
 		case WM_SIZE:
-			std::cout << "> WM_SIZE message | x: " << LOWORD(lParam) << " y: " << HIWORD(lParam) << std::endl;
+			// std::cout << "> WM_SIZE message | x: " << LOWORD(lParam) << " y: " << HIWORD(lParam) << std::endl;
 			resizeWindowEvent(LOWORD(lParam), HIWORD(lParam));
 			break;
 
 		case WM_CLOSE:
-			std::cout << "> WM_CLOSE message" << std::endl;
+			// std::cout << "> WM_CLOSE message" << std::endl;
 			destroyWindow();
 			break;
 
 		case WM_ACTIVATE:
-			std::cout << "> WM_ACTIVATE message | wParam: " << LOWORD(wParam) <<std::endl;
+			// std::cout << "> WM_ACTIVATE message | wParam: " << LOWORD(wParam) <<std::endl;
 			break;
 
 		case WM_SHOWWINDOW:
-			std::cout << "> WM_SHOWWINDOW message | wParam: " << wParam << " lParam: " << lParam << std::endl;
+			// std::cout << "> WM_SHOWWINDOW message | wParam: " << wParam << " lParam: " << lParam << std::endl;
 			break;
 
 		// --------------------------------------------------------------------
@@ -990,54 +778,4 @@ LRESULT CALLBACK windowProcedure(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 	}
 
 	return DefWindowProc(hWnd, uMsg, wParam, lParam);
-}
-
-void setProjection()
-{
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-
-	if(global_rendering_context == CONTEXT_2D)
-	{
-		GLdouble left = global_world_left;
-		GLdouble right = global_world_right;
-		GLdouble bottom = global_world_bottom;
-		GLdouble top = global_world_top;
-
-		if(global_aspect_correction_state)
-		{
-			if(global_window_width <= global_window_height)
-			{
-				global_aspect_correction = GLdouble(global_window_height) / GLdouble(global_window_width);
-				bottom *= global_aspect_correction;
-				top *= global_aspect_correction;
-			}
-			else
-			{
-				global_aspect_correction = GLdouble(global_window_width) / GLdouble(global_window_height);
-				left *= global_aspect_correction;
-				right *= global_aspect_correction;
-			}
-		}
-
-		std::cout << "(2D) global aspect correction: " << global_aspect_correction << std::endl;
-		std::cout << "(2D) global word left: " << left << std::endl;
-		std::cout << "(2D) global word right: " << right << std::endl;
-		std::cout << "(2D) global word bottom: " << bottom << std::endl;
-		std::cout << "(2D) global word top: " << top << std::endl;
-
-		//gluOrtho2D(-win + deslocamentoX, win + deslocamentoX, -win * height / width + deslocamentoY, win * height / width + deslocamentoY);
-		gluOrtho2D(left, right, bottom, top);
-	}
-	else if(global_rendering_context == CONTEXT_3D)
-	{
-		global_aspect_correction = GLdouble(global_window_width) / GLdouble(global_window_height);
-
-		std::cout << "(3D) global aspect correction: " << global_aspect_correction << std::endl;
-		std::cout << "(3D) global projection angle: " << projection_angle << std::endl;
-		std::cout << "(3D) global projection zNear: " << projection_zNear << std::endl;
-		std::cout << "(3D) global projection zFar: " << projection_zFar << std::endl;
-
-		gluPerspective(projection_angle, global_aspect_correction, projection_zNear, projection_zFar);
-	}
 }
