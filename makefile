@@ -1,20 +1,16 @@
 # Caminho dos diretórios
-#INC_DIR=include
 OBJ_DIR=obj
 SRC_DIR=src
 BIN_DIR=bin
 TMP_DIR=tmp
 LIB_DIR=lib
 INC_DIR=include
-RES_DIR=winres
 
 # Flags que devem ser passados para o compilador
 OUTPUT_NAME=app.exe
 CPPSOURCES=$(wildcard $(SRC_DIR)/*.cpp)
 OBJFILES=$(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(CPPSOURCES))	
 DFILES=$(patsubst $(SRC_DIR)/%.cpp,$(TMP_DIR)/%.d,$(CPPSOURCES))
-RESSRCFILES= $(wildcard $(RES_DIR)/*.rc)
-OBJRESFILES=$(patsubst $(RES_DIR)/%.rc,$(OBJ_DIR)/%.o,$(RESSRCFILES))
 
 INC_FLAGS=-I$(INC_DIR)
 LIB_FLAGS=-lgdi32 -lopengl32 -lglu32 -ljpeg -ldiblib -lwinmm
@@ -85,9 +81,4 @@ var-teste:
 	@echo $(RESSRCFILES)
 	@echo $(OBJRESFILES)
 	@echo $(INC_FLAGS)
-
-# Compilação de recursos do Windows
-windows-res: $(OBJRESFILES)
-
-$(OBJ_DIR)/%.o: $(RES_DIR)/%.rc
-	windres $^ $(INC_FLAGS) -o $@
+	
