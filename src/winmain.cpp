@@ -68,10 +68,10 @@ int global_rendering_context = CONTEXT_2D;
 int global_window_width  = 640;
 int global_window_height = 480;
 
-GLdouble global_world_left   = -10;
-GLdouble global_world_right  = 10;
-GLdouble global_world_top    = 10;
-GLdouble global_world_bottom = -10;
+GLdouble global_world_left   = -50;
+GLdouble global_world_right  =  50;
+GLdouble global_world_top    =  50;
+GLdouble global_world_bottom = -50;
 
 GLdouble global_aspect_correction;
 
@@ -93,45 +93,7 @@ LARGE_INTEGER frequency;
 // ----------------------------------------------------------------------------
 //  APPLICATION GLOBAL VARIABLES
 // ----------------------------------------------------------------------------
-DIB textura;
-
-// GLfloat rotX, rotY, rotX_ini, rotY_ini;
-// GLfloat obsX, obsY, obsZ, obsX_ini, obsY_ini, obsZ_ini;
-// int x_ini,y_ini,bot;
-// GLfloat deslocamentoX, deslocamentoY, deslocamentoZ;
-// GLfloat win;
-// int w;
-// int h;
-
-// int prec = 10;
-
-// // Pontos de controle
-// GLfloat pontos[4][4][3] = {
-// 	{{0.0, 0.0, 0.0}, {0.3, 0.5, 0.0}, {0.7, 0.5, 0.0}, {1.0, 0.0, 0.0}},
-// 	{{0.0, 0.0, 0.3}, {0.3, 0.5, 0.3}, {0.7, 0.5, 0.3}, {1.0, 0.0, 0.3}},
-// 	{{0.0, 0.0, 0.7}, {0.3, 0.5, 0.7}, {0.7, 0.5, 0.7}, {1.0, 0.0, 0.7}},
-// 	{{0.0, 0.0, 1.0}, {0.3, 0.5, 1.0}, {0.7, 0.5, 1.0}, {1.0, 0.0, 1.0}}
-// };
-
-VERT vertices[] = {
-	{ -1, 0, -1 },
-	{  1, 0, -1 },
-	{  1, 0,  1 },
-	{ -1, 0,  1 },
-	{  0, 2,  0 },
-};
-
-FACE faces[] = {
-	{ 4, { 0,1,2, 3 }},
-	{ 3, { 0,1,4,-1 }},
-	{ 3, { 0,3,4,-1 }},
-	{ 3, { 1,2,4,-1 }},
-	{ 3, { 3,2,4,-1 }}
-};
-
-OBJ piramide = {
-	vertices, faces, 5
-};
+GLfloat spin = 0.0;
 
 // ----------------------------------------------------------------------------
 //  FUNCTION PROTOTYPE DECLARATION
@@ -245,24 +207,29 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 void initGL()
 {
 	glClearColor(0.0, 0.0, 0.0, 0.0);
-
-	glOrtho(0.0, 1.0, 0.0, 1.0, -1.0, 1.0);
+	glShadeModel(GL_FLAT);
 }
 
 void frameEvent(unsigned long long frameTime)
 {
+	// GLfloat frameTimeSec = static_cast<double>(frameTime) / static_cast<double>(frequency.QuadPart);
+	// std::cout << "frameTime: " << frameTime << std::endl;
+	// std::cout << "frameTimeSec: " << frameTimeSec << std::endl;
+	// std::cout << "spin: " << spin << std::endl;
+	// std::cout << "spin add: " << spin + (2.0 * frameTimeSec) << std::endl << std::endl;
+
+	// spin = spin + (2.0 * frameTimeSec);
+	spin = spin + (2.0);
+
+	if(spin > 360.0)
+		spin = spin - 360.0;
+
 	glClear(GL_COLOR_BUFFER_BIT);
-
+	glPushMatrix();
+	glRotatef(spin, 0.0, 0.0, 1.0);
 	glColor3f(1.0, 1.0, 1.0);
-	
-
-	glBegin(GL_POLYGON);
-	glVertex3f(0.25, 0.25, 0.0);
-	glVertex3f(0.75, 0.25, 0.0);
-	glVertex3f(0.75, 0.75, 0.0);
-	glVertex3f(0.25, 0.75, 0.0);
-	glEnd();
-	glFlush();
+	glRectf(-25.0, -25.0, 25.0, 25.0);
+	glPopMatrix();
 }
 
 void mouseEvent(int button, int state, int x, int y)
@@ -309,52 +276,52 @@ void resizeWindowEvent(int width, int height)
 
 void setProjection()
 {
-	// glMatrixMode(GL_PROJECTION);
-	// glLoadIdentity();
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
 
-	// if(global_rendering_context == CONTEXT_2D)
-	// {
-	// 	GLdouble left = global_world_left;
-	// 	GLdouble right = global_world_right;
-	// 	GLdouble bottom = global_world_bottom;
-	// 	GLdouble top = global_world_top;
+	if(global_rendering_context == CONTEXT_2D)
+	{
+		GLdouble left = global_world_left;
+		GLdouble right = global_world_right;
+		GLdouble bottom = global_world_bottom;
+		GLdouble top = global_world_top;
 
-	// 	if(global_aspect_correction_state)
-	// 	{
-	// 		if(global_window_width <= global_window_height)
-	// 		{
-	// 			global_aspect_correction = GLdouble(global_window_height) / GLdouble(global_window_width);
-	// 			bottom *= global_aspect_correction;
-	// 			top *= global_aspect_correction;
-	// 		}
-	// 		else
-	// 		{
-	// 			global_aspect_correction = GLdouble(global_window_width) / GLdouble(global_window_height);
-	// 			left *= global_aspect_correction;
-	// 			right *= global_aspect_correction;
-	// 		}
-	// 	}
+		if(global_aspect_correction_state)
+		{
+			if(global_window_width <= global_window_height)
+			{
+				global_aspect_correction = GLdouble(global_window_height) / GLdouble(global_window_width);
+				bottom *= global_aspect_correction;
+				top *= global_aspect_correction;
+			}
+			else
+			{
+				global_aspect_correction = GLdouble(global_window_width) / GLdouble(global_window_height);
+				left *= global_aspect_correction;
+				right *= global_aspect_correction;
+			}
+		}
 
-	// 	// std::cout << "(2D) global aspect correction: " << global_aspect_correction << std::endl;
-	// 	// std::cout << "(2D) global word left: " << left << std::endl;
-	// 	// std::cout << "(2D) global word right: " << right << std::endl;
-	// 	// std::cout << "(2D) global word bottom: " << bottom << std::endl;
-	// 	// std::cout << "(2D) global word top: " << top << std::endl;
+		// std::cout << "(2D) global aspect correction: " << global_aspect_correction << std::endl;
+		// std::cout << "(2D) global word left: " << left << std::endl;
+		// std::cout << "(2D) global word right: " << right << std::endl;
+		// std::cout << "(2D) global word bottom: " << bottom << std::endl;
+		// std::cout << "(2D) global word top: " << top << std::endl;
 
-	// 	//gluOrtho2D(-win + deslocamentoX, win + deslocamentoX, -win * height / width + deslocamentoY, win * height / width + deslocamentoY);
-	// 	gluOrtho2D(left, right, bottom, top);
-	// }
-	// else if(global_rendering_context == CONTEXT_3D)
-	// {
-	// 	global_aspect_correction = GLdouble(global_window_width) / GLdouble(global_window_height);
+		//gluOrtho2D(-win + deslocamentoX, win + deslocamentoX, -win * height / width + deslocamentoY, win * height / width + deslocamentoY);
+		gluOrtho2D(left, right, bottom, top);
+	}
+	else if(global_rendering_context == CONTEXT_3D)
+	{
+		global_aspect_correction = GLdouble(global_window_width) / GLdouble(global_window_height);
 
-	// 	// std::cout << "(3D) global aspect correction: " << global_aspect_correction << std::endl;
-	// 	// std::cout << "(3D) global projection angle: " << projection_angle << std::endl;
-	// 	// std::cout << "(3D) global projection zNear: " << projection_zNear << std::endl;
-	// 	// std::cout << "(3D) global projection zFar: " << projection_zFar << std::endl;
+		// std::cout << "(3D) global aspect correction: " << global_aspect_correction << std::endl;
+		// std::cout << "(3D) global projection angle: " << projection_angle << std::endl;
+		// std::cout << "(3D) global projection zNear: " << projection_zNear << std::endl;
+		// std::cout << "(3D) global projection zFar: " << projection_zFar << std::endl;
 
-	// 	gluPerspective(projection_angle, global_aspect_correction, projection_zNear, projection_zFar);
-	// }
+		gluPerspective(projection_angle, global_aspect_correction, projection_zNear, projection_zFar);
+	}
 }
 
 int createWindow(int width, int height, int x, int y)
