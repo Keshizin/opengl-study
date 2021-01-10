@@ -2,5 +2,7 @@ bin/*.exe
 obj/*.o
 tmp/*.d
 *.log
-assets/*.bmp
-assets/*.bpmn
+build/*
+!build/build-msvc-x64.bat
+.vs
+out/
