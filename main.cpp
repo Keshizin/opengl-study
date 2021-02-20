@@ -12,10 +12,10 @@
 #define GAME_WINDOW_WIDTH 640
 #define GAME_WINDOW_HEIGHT 480
 
-#define WINDOW_LEFT   -50.0
-#define WINDOW_RIGHT   50.0
-#define WINDOW_BOTTOM -50.0
-#define WINDOW_TOP     50.0
+#define WINDOW_LEFT   -10.0
+#define WINDOW_RIGHT   10.0
+#define WINDOW_BOTTOM -10.0
+#define WINDOW_TOP     10.0
 
 class GLEventHandler : public GEEventHandler
 {
@@ -71,72 +71,25 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	return 1;
 }
 
-GLfloat tx = 0.0f;
-GLfloat ty = 0.0f;
-GLfloat tz = 0.0f;
+GLubyte bitmap[32] = {
+	0x00, 0x00, 0x03, 0xc0, 0x0c, 0x30, 0x10, 0x08,
+	0x23, 0xc4, 0x24, 0x24, 0x48, 0x12, 0x48, 0x12,
+	0x40, 0x02, 0x40, 0x02, 0x26, 0x64, 0x26, 0x64,
+	0x10, 0x08, 0x0c, 0x30, 0x03, 0xc0, 0x00, 0x00
+};
 
-GLfloat sx = 1.0f;
-GLfloat sy = 1.0f;
-GLfloat sz = 1.0f;
-
-GLfloat offset_x = 0.05f;
-GLfloat offset_y = 0.05f;
-
-GLfloat angleRad = 0.0f;
-int points = 0;
 
 void GLEventHandler::frameEvent()
 {
-	// ------------------------------------------------------------------------
-	// SCALE TEST
-	// ------------------------------------------------------------------------
-	// sx += offset_x;
-	// sy += offset_y;
-
-	// if(sy > 2.0f || sy < 1.0f)
-	// 	offset_y = -offset_y;
-
-	// if(sy > 2.0f || sy < 1.0f)
-	// 	offset_x = -offset_x;
-
-	// ------------------------------------------------------------------------
-	// TRANSLATE TEST
-	// ------------------------------------------------------------------------
-	if(timer->isDoneLoop())
-	{
-		tx = 25 * cos(angleRad);
-		ty = 25 * sin(angleRad);
-
-		points++;
-		angleRad = 2 * K_PI * points / 200;
-
-		if(points >= 200)
-		{
-			points = 0;
-		}
-
-		std::cout << "tx: " << tx << std::endl;
-		std::cout << "ty: " << ty << std::endl << std::endl;
-
-	}
-
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	glTranslatef(tx, ty, tz);
-	// glTranslatef(1.0f, 0.0f, 0.0f);
-	// glScalef(sx, sy, sz);
-
 	glColor3f(1.0f, 0.0f, 0.0f);
-	glBegin(GL_QUADS);
-	glVertex3f(-20.5f,  20.5f, 0.0f);
-	glVertex3f( 20.5f,  20.5f, 0.0f);
-	glVertex3f( 20.5f, -20.5f, 0.0f);
-	glVertex3f(-20.5f, -20.5f, 0.0f);
-	glEnd();
+	glRasterPos2i(0, 0);
 
+	glBitmap(16, 16, 0.0, 0.0, 16.0, 16.0, bitmap);
 }
 
 void GLEventHandler::mouseEvent(int button, int state, int x, int y)
@@ -196,6 +149,8 @@ void GLEventHandler::beforeMainLoopEvent()
 	glClearColor(247.0f / 255.0f, 194.0f / 255.0f, 23.0f / 255.0f, 1.0f);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
+
+	glPixelStorei (GL_UNPACK_ALIGNMENT, 1);
 }
 
 void GLEventHandler::createWindowEvent()
